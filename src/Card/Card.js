@@ -26,8 +26,7 @@ const useStyles = makeStyles(() => ({
       '& > img': {
         transform: 'scale(1.1)',
         transition: 'transform 6s cubic-bezier(0.25, 0.45, 0.45, 0.95)'
-      },
-      opacity: '0.7'
+      }
     }
   },
 
@@ -49,6 +48,8 @@ const Card = props => {
 
   const [url, setUrl] = useState(null);
   const [title, setTitle] = useState(null);
+  // it checks opacity of the card. Card turns to opaque(1) if its value is true, transparent otherwise(0.7)
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const { url, header } = card;
@@ -56,7 +57,11 @@ const Card = props => {
     setTitle(header);
   }, [card]);
   return (
-    <a className={item}>
+    <a
+      className={item}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+      style={hovered ? { opacity: 1 } : { opacity: 0.7 }}>
       <img src={url} />
       <div className={content}>{title}</div>
     </a>
