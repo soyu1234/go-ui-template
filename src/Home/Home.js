@@ -9,7 +9,8 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     overflow: 'hidden',
     flexDirection: 'column',
-    overflowY: 'scroll'
+    overflowY: 'auto',
+    fontFamily: 'Source Code Pro, monospace'
   }
 }));
 

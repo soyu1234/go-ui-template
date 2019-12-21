@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { useCard } from '../Hook/index';
 
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
+
 const useStyles = makeStyles(() => ({
   // Card element styles.
   item: {
@@ -25,23 +29,48 @@ const useStyles = makeStyles(() => ({
       cursor: 'pointer',
       '& > img': {
         transform: 'scale(1.1)',
-        transition: 'transform 6s cubic-bezier(0.25, 0.45, 0.45, 0.95)'
+        transition: 'transform 1.5s cubic-bezier(0.25, 0.45, 0.45, 0.95)'
       }
     }
   },
 
   // Style for game title.
   content: {
-    top: '50%',
+    top: '30%',
     left: '50%',
-    transform: 'translate(-50%, -50%)',
-    position: 'absolute'
+    transform: 'translate(-50%, -20%)',
+    position: 'absolute',
+    // fontSize: '22px',
+    color: '#313632',
+    fontWeight: '700'
+  },
+  button: {
+    borderRadius: '20px',
+    border: 'none',
+    display: 'inline-block',
+    cursor: 'pointer',
+    color: 'black',
+    fontWeight: 'bold',
+    textDecoration: 'none',
+    outline: 'none',
+    '&:hover': {
+      color: 'white'
+    }
+  },
+  playButton: {
+    fontSize: '50px',
+    '&:hover': {
+      color: 'red'
+    }
+  },
+  arrowButton: {
+    fontSize: '30px'
   }
 }));
 
 const Card = props => {
   const classes = useStyles();
-  const { item, content } = classes;
+  const { item, content, button, playButton, arrowButton } = classes;
 
   const { data } = props;
   const card = useCard(data);
@@ -50,6 +79,8 @@ const Card = props => {
   const [title, setTitle] = useState(null);
   // it checks opacity of the card. Card turns to opaque(1) if its value is true, transparent otherwise(0.7)
   const [hovered, setHovered] = useState(false);
+  // shows description of the game when it's true.
+  const [showDescription, setShowDescription] = useState(false);
 
   useEffect(() => {
     const { url, header } = card;
@@ -57,14 +88,29 @@ const Card = props => {
     setTitle(header);
   }, [card]);
   return (
-    <a
+    <div
       className={item}
       onMouseOver={() => setHovered(true)}
       onMouseOut={() => setHovered(false)}
-      style={hovered ? { opacity: 1 } : { opacity: 0.7 }}>
-      <img src={url} />
-      <div className={content}>{title}</div>
-    </a>
+      style={hovered ? { opacity: 1 } : { opacity: 0.5 }}>
+      <img src={url} style={showDescription ? { opacity: 0.4 } : null} />
+      {setHovered ? (
+        <div className={content}>
+          <a href={data.url}>
+            <PlayCircleFilledIcon className={playButton} />
+          </a>
+          <h2>{!showDescription ? title : null}</h2>
+          <span className={button} onClick={() => setShowDescription(!showDescription)}>
+            {!showDescription ? (
+              <ArrowDownwardIcon className={arrowButton} />
+            ) : (
+              <ArrowUpwardIcon className={arrowButton} />
+            )}
+          </span>
+          {showDescription ? <p>{data.description.substring(0, 75) + '...'}</p> : null}
+        </div>
+      ) : null}
+    </div>
   );
 };
 
