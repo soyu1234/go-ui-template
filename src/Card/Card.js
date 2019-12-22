@@ -16,31 +16,26 @@ const useStyles = makeStyles(() => ({
   ////  styles of five cards story component starts below ////
   // Card element styles.
   item: {
-    height: '50vh',
-    width: 'calc(100% / 3)',
-    border: '1px solid white',
-    display: 'block',
-    padding: 0,
     overflow: 'hidden',
+    color: 'white',
+    background: 'black',
+    display: 'flex',
+    flexDirection: 'column',
+    maxWidth: '240px',
     position: 'relative',
-    boxSizing: 'border-box',
-    alignItems: 'center',
-    textAlign: 'center',
-    '&:nth-child(4)': {
-      width: '50%'
+    '& > img': {
+      width: '100%',
+      height: '100%'
     },
-    '&:nth-child(5)': {
-      width: '50%'
-    },
+
     '&:hover': {
       cursor: 'pointer',
       '& > img': {
         transform: 'scale(1.1)',
-        transition: 'transform 1.5s cubic-bezier(0.25, 0.45, 0.45, 0.95)'
+        transition: 'transform 1s cubic-bezier(0.25, 0.45, 0.45, 0.95)'
       }
     }
   },
-
   // Style for game title.
   content: {
     top: '30%',
@@ -48,7 +43,9 @@ const useStyles = makeStyles(() => ({
     transform: 'translate(-50%, -20%)',
     position: 'absolute',
     color: '#313632',
-    fontWeight: '700'
+    fontWeight: '700',
+    textAlign: 'center',
+    alignItems: 'center'
   },
   button: {
     borderRadius: '20px',
@@ -57,6 +54,7 @@ const useStyles = makeStyles(() => ({
     cursor: 'pointer',
     color: 'black',
     fontWeight: 'bold',
+    textAlign: 'center',
     textDecoration: 'none',
     outline: 'none',
     '&:hover': {
@@ -64,14 +62,24 @@ const useStyles = makeStyles(() => ({
     }
   },
   playButton: {
-    fontSize: '50px',
+    fontSize: '70px',
+    textAlign: 'center',
+
     '&:hover': {
       color: 'red'
     }
   },
-  arrowButton: {
+  arrowDownButton: {
     fontSize: '30px'
   },
+  arrowUpButton: {
+    fontSize: '30px',
+    color: '#fdfdfd',
+    '&:hover': {
+      color: 'black'
+    }
+  },
+
   ////  styles of five cards story component eds here ////
   ////  hundred card layout styles starts below ////
   hundredCard: {
@@ -97,7 +105,16 @@ const useStyles = makeStyles(() => ({
 
 const Card = props => {
   const classes = useStyles();
-  const { item, content, button, playButton, arrowButton, hundredCard, hundredCardImg } = classes;
+  const {
+    item,
+    content,
+    button,
+    playButton,
+    arrowDownButton,
+    hundredCard,
+    hundredCardImg,
+    arrowUpButton
+  } = classes;
 
   const { data, layout } = props;
   const card = useCard(data);
@@ -131,18 +148,23 @@ const Card = props => {
           <h2>{!showDescription ? title : null}</h2>
           <span className={button} onClick={() => setShowDescription(!showDescription)}>
             {!showDescription ? (
-              <ArrowDownwardIcon className={arrowButton} />
+              <ArrowDownwardIcon className={arrowDownButton} />
             ) : (
-              <ArrowUpwardIcon className={arrowButton} />
+              <ArrowUpwardIcon className={arrowUpButton} />
             )}
           </span>
-          {showDescription ? <p>{data.description.substring(0, 75) + '...'}</p> : null}
+          {showDescription ? (
+            <p style={{ color: '#fdfdfd' }}>{data.description.substring(0, 75) + '...'}</p>
+          ) : null}
         </div>
       ) : null}
     </div>
   ) : (
     <div className={hundredCard}>
       <img src={url} className={hundredCardImg} />
+      <a href={data.url} style={{ display: 'flow-root', color: 'yellow' }}>
+        <PlayCircleFilledIcon className={playButton} />
+      </a>
       <div>
         <h2>{title}</h2>
       </div>

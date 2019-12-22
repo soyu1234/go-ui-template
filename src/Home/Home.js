@@ -13,12 +13,8 @@ import LayoutFeatures from '../constants/constants';
 const useStyles = makeStyles(() => ({
   // this layout will be using in 5 game cards story component.
   fewCardsLayout: {
-    margin: '0',
     height: '100%',
-    overflow: 'hidden',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    fontFamily: 'Source Code Pro, monospace'
+    width: '100%'
   },
   // this layout will be using in 100 game cards story component.
   hundredCardsLayout: {

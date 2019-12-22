@@ -11,9 +11,23 @@ import LayoutFeatures from '../constants/constants';
 
 const useStyles = makeStyles(() => ({
   fewCardsBox: {
-    width: '100%',
     display: 'flex',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    height: '100%',
+    overflow: 'auto',
+    '& > div': {
+      flex: '0 0 33.3%',
+      maxWidth: 'none',
+      border: '0',
+      height: '50%',
+      maxHeight: '50%'
+    },
+    '& > :nth-child(4)': {
+      flex: '0 0 50%'
+    },
+    '& > :nth-child(5)': {
+      flex: '0 0 50%'
+    }
   },
   hundredCardsBox: {
     overflow: 'scroll',
