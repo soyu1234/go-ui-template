@@ -34,11 +34,12 @@ const useStyles = makeStyles(theme => ({
 const Copyright = () => {
     return (
         <Grid container direction="row" justify="center" alignItems="center" style={{fontWeight:'500'}}>
-        {'Copyright © '}
+        {'Copyright ©'} &nbsp;
         <Link color="inherit" href={"gamedistribution.com"} >
                 Game Distribution
-            </Link>{' '}
-            {new Date().getFullYear()}
+            </Link>
+            &nbsp;
+            { new Date().getFullYear()}
         </Grid>
     );
 }
