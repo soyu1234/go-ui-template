@@ -27,7 +27,7 @@ const Copyright = () => {
 const PrivacyPolicy = () => {
     return(
         <Grid item>
-        &nbsp;<FiberManualRecordIcon style={{height:"10px", width:"10px"}}/>&nbsp; Privacy policy &nbsp;
+        &nbsp;|&nbsp; Privacy policy &nbsp;
         </Grid>
     );
 }
@@ -43,7 +43,7 @@ const FooterLogo = () => {
 const ReviewAndTerms = () => {
     return(
         <Grid item>
-        &nbsp;Review privacy preferences &nbsp;<FiberManualRecordIcon style={{height:"10px", width:"10px"}}/>&nbsp; Terms & conditions
+        &nbsp;Review privacy preferences &nbsp;-&nbsp; Terms & conditions
         </Grid>
     );
 }
