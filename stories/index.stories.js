@@ -5,6 +5,7 @@ import '@storybook/addon-viewport/register';
 // component import section
 import { Home } from '../src/Home/index';
 import { Footer } from '../src/Footer';
+import { FooterLeft } from '../src/FooterLeft';
 
 import AceEditor from 'react-ace';
 
@@ -35,3 +36,7 @@ import data from './data';
 storiesOf('Footer', module).add('footer', () => {
   return <Footer/>
 });
+
+storiesOf('Footer', module).add('footerLeft', () => {
+  return <FooterLeft/>
+})
