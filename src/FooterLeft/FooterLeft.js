@@ -16,12 +16,18 @@ const useStyles = makeStyles(theme => ({
     },
     images: {
         width: '75px',
-        height:'75px'
+        height:'75px',
+        '&:hover': {
+            transition: 'all 1s ease-out',
+            opacity:'0.6',
+            cursor:'pointer',
+        },
+        transition:'opacity 1s'
     },
     footerGrid: {
         fontFamily:"'Acme', sans-serif",
         color:'#37474f',
-        fontWeight:'550'
+        fontWeight:'550',
     }
 }));
 
@@ -77,18 +83,19 @@ function FooterGrid(props) {
         <Grid className={footerGrid} container  direction="row" justify="center" alignItems="center">
             <Grid container justify="center" alignItems="center" direction="column" md={3} sm={6}>
                 <img className={images} src={PrivacyPolicyLogo}/>
+                {/* <PrivacyPolicyLogo fill="red" className={images} width={50} height={50} /> */}
                 &nbsp;
                 <PrivacyPolicy/>
                 &nbsp;
             </Grid>
-            <Grid container justify="center" alignItems="center" direction="column" md={3} sm={6} >
+            <Grid  container justify="center" alignItems="center" direction="column" md={3} sm={6} >
                 <img className={images} src={conditionsLogo}/>
                 &nbsp;
                 <ReviewAndTerms/>
                 &nbsp;
             </Grid>
 
-            <Grid container justify="center" alignItems="center" direction="column" md={3} sm={6}>
+            <Grid  container justify="center" alignItems="center" direction="column" md={3} sm={6}>
                 <img className={images} src={PrivacyReviewLogo}/>
                 &nbsp;
                 <ReviewPrivacyTerms/>
