@@ -9,6 +9,8 @@ import conditionsLogo from '../assets/conditions.svg';
 import PrivacyPolicyLogo from '../assets/collateral.svg';
 import PrivacyReviewLogo from '../assets/search.svg';
 
+import './footerLeft.css';
+
 const useStyles = makeStyles(theme => ({
     footer: {
         backgroundColor: theme.palette.background.paper,
@@ -17,12 +19,6 @@ const useStyles = makeStyles(theme => ({
     images: {
         width: '75px',
         height:'75px',
-        '&:hover': {
-            transition: 'all 1s ease-out',
-            opacity:'0.6',
-            cursor:'pointer',
-        },
-        transition:'opacity 1s'
     },
     footerGrid: {
         fontFamily:"'Acme', sans-serif",
@@ -45,9 +41,11 @@ const Copyright = () => {
 }
 
 const PrivacyPolicy = () => {
+    const classes = useStyles();
+    const { content } = classes;
     return( 
     <Grid item>
-        Privacy policy
+        <Link style={{textDecoration:'none'}} color="inherit" className="content" href="#">Privacy policy</Link> 
     </Grid>
 
 
@@ -65,7 +63,7 @@ const FooterLogo = () => {
 const ReviewAndTerms = () => {
     return(
         <Grid item>
-            Terms & Conditions
+            <Link style={{textDecoration:'none'}} color="inherit" className="content" href="#">Terms & Conditions</Link> 
         </Grid>
     );
 }
@@ -73,7 +71,7 @@ const ReviewAndTerms = () => {
 const ReviewPrivacyTerms = () => {
     return(
         <Grid item>
-            Review privacy preferences
+            <Link style={{textDecoration:'none'}} color="inherit" className="content" href="#">Review privacy preferences</Link>    
         </Grid>
     )
 }
