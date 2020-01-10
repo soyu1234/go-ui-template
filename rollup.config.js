@@ -7,9 +7,9 @@ import pkg from "./package.json";
 import replace from "rollup-plugin-replace";
 import resolve from "rollup-plugin-node-resolve";
 import { terser } from "rollup-plugin-terser";
-import copy from 'rollup-plugin-copy';
+import copy from "rollup-plugin-copy";
 
-const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".json",".png"];
+const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".json", ".png"];
 const CODES = [
   "THIS_IS_UNDEFINED",
   "MISSING_GLOBAL_NAME",
@@ -19,10 +19,7 @@ const CODES = [
 const getChunks = URI =>
   readdirSync(path.resolve(URI))
     .filter(x => x.includes(".js"))
-    .reduce(
-      (a, c) => ({ ...a, [c.replace(".js", "")]: `src/${c}` }),
-      {}
-    );
+    .reduce((a, c) => ({ ...a, [c.replace(".js", "")]: `src/${c}` }), {});
 
 const discardWarning = warning => {
   if (CODES.includes(warning.code)) {
@@ -55,9 +52,7 @@ const commonPlugins = () => [
     dedupe: ["react", "react-dom"]
   }),
   copy({
-    targets: [
-      { src: `src/assets/images/**`, dest: `dist/assets/images/` }
-    ]
+    targets: [{ src: `src/assets/images/**`, dest: `dist/assets/images/` }]
   })
 ];
 
