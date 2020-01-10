@@ -8,6 +8,7 @@ import { Home } from "../src/Home/index";
 import { Footer } from "../src/Footer";
 import { FooterLeft } from "../src/FooterLeft";
 import { Header } from "../src/Header";
+import { ReviewModal } from "../src/ReviewModal";
 import theme from "./theme";
 
 import AceEditor from "react-ace";
@@ -52,7 +53,7 @@ storiesOf("Footer", module).add("footerLeft", () => {
   };
   return (
     <ThemeProvider theme={theme}>
-      <FooterLeft {...props} themeMode={theme.palette.type} />
+      <FooterLeft {...props} />
     </ThemeProvider>
   );
 });
@@ -61,6 +62,14 @@ storiesOf("Header", module).add("header1", () => {
   return (
     <ThemeProvider theme={theme}>
       <Header themeMode={theme.palette.type} />
+    </ThemeProvider>
+  );
+});
+
+storiesOf("Modal", module).add("review terms and conditions modal", () => {
+  return (
+    <ThemeProvider theme={theme}>
+      <ReviewModal />
     </ThemeProvider>
   );
 });
