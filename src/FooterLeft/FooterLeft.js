@@ -6,7 +6,6 @@ import conditionsLogo from "../assets/conditions.svg";
 import PrivacyPolicyLogo from "../assets/collateral.svg";
 import PrivacyReviewLogo from "../assets/search.svg";
 import { Samy, SvgProxy } from "react-samy-svg";
-import orbitLogoLight from "../assets/orbit-logo-512-light.png";
 
 import "./footerLeft.css";
 
