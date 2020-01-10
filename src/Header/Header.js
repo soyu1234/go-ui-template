@@ -1,5 +1,5 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, useTheme } from "@material-ui/core";
 import { Link, AppBar, Toolbar } from "@material-ui/core";
 
 import "./header.css";
@@ -63,8 +63,8 @@ const useStyles = makeStyles(theme => ({
 
 const Header = props => {
   const classes = useStyles();
+  const theme = useTheme();
   const { orbitLogo, headerContainer, content, orbitText } = classes;
-  const { themeMode } = props;
   const array = [1, 2, 3, 4];
   return (
     <div>
@@ -73,7 +73,7 @@ const Header = props => {
           <img
             className={orbitLogo}
             src={
-              themeMode === "light"
+              theme.palette.type === "light"
                 ? "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png"
                 : "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-light.png"
             }

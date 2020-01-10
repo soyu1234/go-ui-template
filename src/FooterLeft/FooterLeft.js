@@ -1,10 +1,13 @@
-import React, { useState, useEffect0 } from "react";
-import { makeStyles, Container } from "@material-ui/core";
+import React, { useState, useEffect } from "react";
+import { makeStyles, Container, useTheme } from "@material-ui/core";
 import { Grid } from "@material-ui/core";
 import { Link } from "@material-ui/core";
-import conditionsLogo from "../assets/conditions.svg";
-import PrivacyPolicyLogo from "../assets/collateral.svg";
-import PrivacyReviewLogo from "../assets/search.svg";
+import conditionsLogoDark from "../assets/conditions.svg";
+import conditionsLogoLight from "../assets/conditions-light.svg";
+import PrivacyPolicyLogoDark from "../assets/collateral.svg";
+import PrivacyPolicyLogoLight from "../assets/collateral-light.svg";
+import PrivacyReviewLogoDark from "../assets/search.svg";
+import PrivacyReviewLogoLight from "../assets/search-light.svg";
 import { Samy, SvgProxy } from "react-samy-svg";
 
 import "./footerLeft.css";
@@ -89,13 +92,14 @@ const PrivacyPolicy = props => {
 };
 
 const FooterLogo = props => {
-  const { footerLogo, themeMode } = props;
+  const theme = useTheme();
+  const { footerLogo } = props;
   return (
     <Grid item>
       <img
         className={footerLogo}
         src={
-          themeMode === "light"
+          theme.palette.type === "light"
             ? "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png"
             : "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-light.png"
         }
@@ -138,13 +142,13 @@ const ReviewPrivacyTerms = () => {
 };
 
 function FooterGrid(props) {
+  const theme = useTheme();
   const {
     images,
     footerGrid,
     website,
     title,
     url,
-    themeMode,
     footerLogo,
     privacyUrl,
     termsAndConditionsUrl
@@ -166,10 +170,14 @@ function FooterGrid(props) {
         md={3}
         sm={6}
       >
-        <Samy
-          path={PrivacyPolicyLogo}
+        <img
+          src={
+            theme.palette.type === "light"
+              ? PrivacyPolicyLogoDark
+              : PrivacyPolicyLogoLight
+          }
+          alt="privacy-policy"
           className={images}
-          fill={themeMode === "dark" ? "#fff" : ""}
         />
         &nbsp;
         <PrivacyPolicy privacyUrl={privacyUrl} />
@@ -184,10 +192,14 @@ function FooterGrid(props) {
         md={3}
         sm={6}
       >
-        <Samy
-          path={conditionsLogo}
+        <img
+          src={
+            theme.palette.type === "light"
+              ? conditionsLogoDark
+              : conditionsLogoLight
+          }
+          alt="privacy-policy"
           className={images}
-          fill={themeMode === "dark" ? "#fff" : ""}
         />
         &nbsp;
         <ReviewAndTerms termsAndConditionsUrl={termsAndConditionsUrl} />
@@ -203,10 +215,14 @@ function FooterGrid(props) {
         md={3}
         sm={6}
       >
-        <Samy
-          path={PrivacyReviewLogo}
+        <img
+          src={
+            theme.palette.type === "light"
+              ? PrivacyReviewLogoDark
+              : PrivacyReviewLogoLight
+          }
+          alt="privacy-policy"
           className={images}
-          fill={themeMode === "dark" ? "#fff" : ""}
         />
         &nbsp;
         <ReviewPrivacyTerms />
@@ -214,7 +230,7 @@ function FooterGrid(props) {
       </Grid>
       <Grid container justify="center" alignItems="center" direction="column">
         &nbsp;
-        <FooterLogo footerLogo={footerLogo} themeMode={themeMode} />
+        <FooterLogo footerLogo={footerLogo} />
         <Copyright website={website} url={url} />
       </Grid>
     </Grid>
@@ -224,7 +240,7 @@ function FooterGrid(props) {
 export default function FooterLeft(props) {
   const classes = useStyles();
   const { footer, images, footerGrid, footerLogo } = classes;
-  const { website, url, themeMode, privacyUrl, termsAndConditionsUrl } = props;
+  const { website, url, privacyUrl, termsAndConditionsUrl } = props;
   return (
     <footer className={footer}>
       <FooterGrid
@@ -232,7 +248,6 @@ export default function FooterLeft(props) {
         footerGrid={footerGrid}
         website={website}
         url={url}
-        themeMode={themeMode}
         footerLogo={footerLogo}
         privacyUrl={privacyUrl}
         termsAndConditionsUrl={termsAndConditionsUrl}
