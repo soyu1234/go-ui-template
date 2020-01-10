@@ -1,1 +1,1 @@
-export { default as GameCollectionRSS } from './GameCollectionRSS'
+export { default as GameCollectionRSS } from "./GameCollectionRSS";

@@ -12,9 +12,7 @@ var core = require('@material-ui/core');
 var _regeneratorRuntime = _interopDefault(require('@babel/runtime/regenerator'));
 var _asyncToGenerator = _interopDefault(require('@babel/runtime/helpers/asyncToGenerator'));
 var _classCallCheck = _interopDefault(require('@babel/runtime/helpers/classCallCheck'));
-var _createClass = _interopDefault(require('@babel/runtime/helpers/createClass'));
-var axios = _interopDefault(require('axios'));
-var querystring = _interopDefault(require('querystring'));
+require('axios');
 var format = _interopDefault(require('string-format'));
 var ArrowDownwardIcon = _interopDefault(require('@material-ui/icons/ArrowDownward'));
 var ArrowUpwardIcon = _interopDefault(require('@material-ui/icons/ArrowUpward'));
@@ -106,38 +104,9 @@ var useCard = function useCard(item) {
   return gameContext;
 };
 
-var DEFAULT_AMOUNT = 5;
-var DEFAULT_PAGE = 1;
-
-var GameCollectionRSS =
-/*#__PURE__*/
-function () {
-  function GameCollectionRSS(url, config) {
-    _classCallCheck(this, GameCollectionRSS);
-
-    var _url$split = url.split("?"),
-        _url$split2 = _slicedToArray(_url$split, 2),
-        basicUrl = _url$split2[0],
-        query = _url$split2[1];
-
-    query = querystring.parse(query);
-    query.amount = query.amount || DEFAULT_AMOUNT;
-    query.page = query.page || DEFAULT_PAGE;
-    this.basicUrl = basicUrl;
-    this.query = query;
-    this.config = config;
-  }
-
-  _createClass(GameCollectionRSS, [{
-    key: "getItems",
-    value: function getItems() {
-      var url = this.basicUrl + "?" + querystring.stringify(this.query);
-      return axios.get(url);
-    }
-  }]);
-
-  return GameCollectionRSS;
-}();
+var GameCollectionRSS = function GameCollectionRSS() {
+  _classCallCheck(this, GameCollectionRSS);
+};
 
 var useGameCollectionRSS = function useGameCollectionRSS(config) {
   var _useState = React.useState(null),

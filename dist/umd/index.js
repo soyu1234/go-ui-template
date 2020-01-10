@@ -1,17 +1,15 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@babel/runtime/helpers/slicedToArray'), require('react'), require('@material-ui/core/styles'), require('@material-ui/core'), require('@babel/runtime/regenerator'), require('@babel/runtime/helpers/asyncToGenerator'), require('@babel/runtime/helpers/classCallCheck'), require('@babel/runtime/helpers/createClass'), require('axios'), require('querystring'), require('string-format'), require('@material-ui/icons/ArrowDownward'), require('@material-ui/icons/ArrowUpward'), require('@material-ui/icons/PlayCircleFilled')) :
-  typeof define === 'function' && define.amd ? define(['exports', '@babel/runtime/helpers/slicedToArray', 'react', '@material-ui/core/styles', '@material-ui/core', '@babel/runtime/regenerator', '@babel/runtime/helpers/asyncToGenerator', '@babel/runtime/helpers/classCallCheck', '@babel/runtime/helpers/createClass', 'axios', 'querystring', 'string-format', '@material-ui/icons/ArrowDownward', '@material-ui/icons/ArrowUpward', '@material-ui/icons/PlayCircleFilled'], factory) :
-  (global = global || self, factory(global['GOUI-TEMPLATE'] = {}, global._slicedToArray, global.React, global.styles, global.core, global._regeneratorRuntime, global._asyncToGenerator, global._classCallCheck, global._createClass, global.axios, global.querystring, global.format, global.ArrowDownwardIcon, global.ArrowUpwardIcon, global.PlayCircleFilledIcon));
-}(this, (function (exports, _slicedToArray, React, styles, core, _regeneratorRuntime, _asyncToGenerator, _classCallCheck, _createClass, axios, querystring, format, ArrowDownwardIcon, ArrowUpwardIcon, PlayCircleFilledIcon) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@babel/runtime/helpers/slicedToArray'), require('react'), require('@material-ui/core/styles'), require('@material-ui/core'), require('@babel/runtime/regenerator'), require('@babel/runtime/helpers/asyncToGenerator'), require('@babel/runtime/helpers/classCallCheck'), require('axios'), require('string-format'), require('@material-ui/icons/ArrowDownward'), require('@material-ui/icons/ArrowUpward'), require('@material-ui/icons/PlayCircleFilled')) :
+  typeof define === 'function' && define.amd ? define(['exports', '@babel/runtime/helpers/slicedToArray', 'react', '@material-ui/core/styles', '@material-ui/core', '@babel/runtime/regenerator', '@babel/runtime/helpers/asyncToGenerator', '@babel/runtime/helpers/classCallCheck', 'axios', 'string-format', '@material-ui/icons/ArrowDownward', '@material-ui/icons/ArrowUpward', '@material-ui/icons/PlayCircleFilled'], factory) :
+  (global = global || self, factory(global['GOUI-TEMPLATE'] = {}, global._slicedToArray, global.React, global.styles, global.core, global._regeneratorRuntime, global._asyncToGenerator, global._classCallCheck, global.axios, global.format, global.ArrowDownwardIcon, global.ArrowUpwardIcon, global.PlayCircleFilledIcon));
+}(this, (function (exports, _slicedToArray, React, styles, core, _regeneratorRuntime, _asyncToGenerator, _classCallCheck, axios, format, ArrowDownwardIcon, ArrowUpwardIcon, PlayCircleFilledIcon) { 'use strict';
 
   _slicedToArray = _slicedToArray && _slicedToArray.hasOwnProperty('default') ? _slicedToArray['default'] : _slicedToArray;
   var React__default = 'default' in React ? React['default'] : React;
   _regeneratorRuntime = _regeneratorRuntime && _regeneratorRuntime.hasOwnProperty('default') ? _regeneratorRuntime['default'] : _regeneratorRuntime;
   _asyncToGenerator = _asyncToGenerator && _asyncToGenerator.hasOwnProperty('default') ? _asyncToGenerator['default'] : _asyncToGenerator;
   _classCallCheck = _classCallCheck && _classCallCheck.hasOwnProperty('default') ? _classCallCheck['default'] : _classCallCheck;
-  _createClass = _createClass && _createClass.hasOwnProperty('default') ? _createClass['default'] : _createClass;
   axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
-  querystring = querystring && querystring.hasOwnProperty('default') ? querystring['default'] : querystring;
   format = format && format.hasOwnProperty('default') ? format['default'] : format;
   ArrowDownwardIcon = ArrowDownwardIcon && ArrowDownwardIcon.hasOwnProperty('default') ? ArrowDownwardIcon['default'] : ArrowDownwardIcon;
   ArrowUpwardIcon = ArrowUpwardIcon && ArrowUpwardIcon.hasOwnProperty('default') ? ArrowUpwardIcon['default'] : ArrowUpwardIcon;
@@ -103,38 +101,9 @@
     return gameContext;
   };
 
-  var DEFAULT_AMOUNT = 5;
-  var DEFAULT_PAGE = 1;
-
-  var GameCollectionRSS =
-  /*#__PURE__*/
-  function () {
-    function GameCollectionRSS(url, config) {
-      _classCallCheck(this, GameCollectionRSS);
-
-      var _url$split = url.split("?"),
-          _url$split2 = _slicedToArray(_url$split, 2),
-          basicUrl = _url$split2[0],
-          query = _url$split2[1];
-
-      query = querystring.parse(query);
-      query.amount = query.amount || DEFAULT_AMOUNT;
-      query.page = query.page || DEFAULT_PAGE;
-      this.basicUrl = basicUrl;
-      this.query = query;
-      this.config = config;
-    }
-
-    _createClass(GameCollectionRSS, [{
-      key: "getItems",
-      value: function getItems() {
-        var url = this.basicUrl + "?" + querystring.stringify(this.query);
-        return axios.get(url);
-      }
-    }]);
-
-    return GameCollectionRSS;
-  }();
+  var GameCollectionRSS = function GameCollectionRSS() {
+    _classCallCheck(this, GameCollectionRSS);
+  };
 
   var useGameCollectionRSS = function useGameCollectionRSS(config) {
     var _useState = React.useState(null),
