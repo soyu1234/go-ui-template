@@ -8,7 +8,7 @@ import PrivacyPolicyLogoDark from "../assets/collateral.svg";
 import PrivacyPolicyLogoLight from "../assets/collateral-light.svg";
 import PrivacyReviewLogoDark from "../assets/search.svg";
 import PrivacyReviewLogoLight from "../assets/search-light.svg";
-import { Samy, SvgProxy } from "react-samy-svg";
+import { ReviewModal } from "../ReviewModal";
 
 import "./footerLeft.css";
 
@@ -126,14 +126,15 @@ const ReviewAndTerms = props => {
   );
 };
 
-const ReviewPrivacyTerms = () => {
+const ReviewPrivacyTerms = props => {
+  const { handleOpen } = props;
   return (
     <Grid item>
       <Link
-        style={{ textDecoration: "none" }}
+        style={{ textDecoration: "none", cursor: "pointer" }}
         color="inherit"
         className="content"
-        href="#"
+        onClick={handleOpen}
       >
         Review privacy preferences
       </Link>
@@ -151,7 +152,8 @@ function FooterGrid(props) {
     url,
     footerLogo,
     privacyUrl,
-    termsAndConditionsUrl
+    termsAndConditionsUrl,
+    handleOpen
   } = props;
   return (
     <Grid
@@ -225,7 +227,7 @@ function FooterGrid(props) {
           className={images}
         />
         &nbsp;
-        <ReviewPrivacyTerms />
+        <ReviewPrivacyTerms handleOpen={handleOpen} />
         &nbsp;
       </Grid>
       <Grid container justify="center" alignItems="center" direction="column">
@@ -241,6 +243,15 @@ export default function FooterLeft(props) {
   const classes = useStyles();
   const { footer, images, footerGrid, footerLogo } = classes;
   const { website, url, privacyUrl, termsAndConditionsUrl } = props;
+  const [modalToggle, setModalToggle] = useState(false);
+
+  const handleOpen = () => {
+    setModalToggle(true);
+  };
+  const handleClose = () => {
+    setModalToggle(false);
+  };
+
   return (
     <footer className={footer}>
       <FooterGrid
@@ -251,7 +262,9 @@ export default function FooterLeft(props) {
         footerLogo={footerLogo}
         privacyUrl={privacyUrl}
         termsAndConditionsUrl={termsAndConditionsUrl}
+        handleOpen={handleOpen}
       />
+      <ReviewModal modalToggle={modalToggle} handleClose={handleClose} />
     </footer>
   );
 }

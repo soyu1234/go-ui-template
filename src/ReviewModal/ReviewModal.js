@@ -41,33 +41,56 @@ const useStyles = makeStyles(theme => ({
   },
   dialogContentText: {
     color: theme.palette.type === "light" ? "black" : "#C0A080"
+  },
+  dialogActions: {
+    alignItems: "center",
+    justify: "center",
+    backgroundColor:
+      theme.palette.type === "light"
+        ? theme.palette.background.paper
+        : "#2a2330"
+  },
+  buttons: {
+    display: "inline-flex;",
+    height: "40px;",
+    width: "150px;",
+    border: "2px solid #FFC247;",
+    margin: " 20px 20px 20px 20px;",
+    color: " #FFC247;",
+    textTransform: "uppercase;",
+    textDecoration: "none",
+    fontSize: ".8em",
+    letterSpacing: "1.5px;",
+    alignItems: "center;",
+    justifyContent: "center;",
+    overflow: "hidden;",
+    position: "relative",
+    transition: "all .3s ease-Out;",
+    fontWeight: "550",
+    "&:hover": {
+      left: 0,
+      backgroundColor: "#FFC247",
+      color: "#fff"
+    }
   }
 }));
 
 const ReviewModal = props => {
   const classes = useStyles();
   const theme = useTheme();
+  const { modalToggle, handleClose } = props;
   const {
     orbitLogo,
     dialogTitle,
     dialogContainer,
     dialogContent,
-    dialogContentText
+    dialogContentText,
+    dialogActions,
+    buttons
   } = classes;
 
-  const [modalToggle, setModalToggle] = useState(false);
-
-  const handleOpen = () => {
-    setModalToggle(true);
-  };
-  const handleClose = () => {
-    setModalToggle(false);
-  };
   return (
     <div>
-      <Button variant="outlined" color="primary" onClick={() => handleOpen()}>
-        Open Modal
-      </Button>
       <Dialog
         open={modalToggle}
         onClose={handleClose}
@@ -121,6 +144,20 @@ const ReviewModal = props => {
                 The storage of information, or access to information that is
                 already stored, on your device such as advertising identifiers,
                 device identifiers, cookies, and similar technologies.
+                <Grid
+                  item
+                  style={{
+                    // border: "2px solid #01ADEF",
+                    color: "#3D7E84",
+                    paddingLeft: "20px",
+                    marginTop: "20px",
+                    // boxShadow: "inset 0 0 10px",
+                    borderLeft: "2px dotted"
+                  }}
+                >
+                  <h4>Example</h4>
+                  <p>Example sentence</p>
+                </Grid>
               </DialogContentText>
             </DialogContent>
 
@@ -154,24 +191,17 @@ const ReviewModal = props => {
                 apps, over time.
               </DialogContentText>
             </DialogContent>
-
-            <DialogContent className={dialogContent}>
-              <h3>aaaa</h3>
-              <DialogContentText className={dialogContentText}>
-                Let Google help apps determine location. This means sending
-                anonymous location data to Google, even when no apps are
-                running.
-              </DialogContentText>
-            </DialogContent>
           </Grid>
         </Grid>
 
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Disagree
-          </Button>
-          <Button onClick={handleClose} color="primary" autoFocus>
-            Agree
+        <DialogActions className={dialogActions}>
+          <Button
+            onClick={handleClose}
+            className={buttons}
+            color="inherit"
+            autoFocus
+          >
+            Accept All
           </Button>
         </DialogActions>
       </Dialog>
