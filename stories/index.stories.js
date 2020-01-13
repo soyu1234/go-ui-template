@@ -66,10 +66,10 @@ storiesOf("Header", module).add("header1", () => {
   );
 });
 
-storiesOf("Modal", module).add("review terms and conditions modal", () => {
-  return (
-    <ThemeProvider theme={theme}>
-      <ReviewModal />
-    </ThemeProvider>
-  );
-});
+// storiesOf("Modal", module).add("review terms and conditions modal", () => {
+//   return (
+//     <ThemeProvider theme={theme}>
+//       <ReviewModal />
+//     </ThemeProvider>
+//   );
+// });
