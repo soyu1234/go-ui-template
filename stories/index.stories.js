@@ -11,27 +11,23 @@ import { Header } from "../src/Header";
 import { ReviewModal } from "../src/ReviewModal";
 import { ComponentTest } from "../src/ComponentTest";
 
+import { EditorPasteHtml } from "../src/EditorPasteHtml";
+
 import theme from "./theme";
 
 // utils imports section
 import LayoutFeatures from "../src/constants/constants";
 import data from "./data";
 
-storiesOf("Home", module).add("5 in 1", () => {
-  // Create new object from original data with different reference, so actual data won't be corrupted.
-  const lessData = { ...data };
-  lessData.game.amount = 5;
-  console.log(LayoutFeatures.LESS_AMOUNT_OF_CARDS);
-  return <Home data={lessData} layout={LayoutFeatures.LESS_AMOUNT_OF_CARDS} />;
-});
+let globVal = [{ type: "paragraph", children: [{ text: "", color: "" }] }];
 
-storiesOf("editor", module).add("Slate", () => {
-  const handleChange = data => {
-    glob = data;
-    console.log(glob);
-  };
-  return <ComponentTest change={data => handleChange(data)} data={data} />;
-});
+// storiesOf("Home", module).add("5 in 1", () => {
+//   // Create new object from original data with different reference, so actual data won't be corrupted.
+//   const lessData = { ...data };
+//   lessData.game.amount = 5;
+//   console.log(LayoutFeatures.LESS_AMOUNT_OF_CARDS);
+//   return <Home data={lessData} layout={LayoutFeatures.LESS_AMOUNT_OF_CARDS} />;
+// });
 
 // storiesOf('Home', module).add('100 in 1', () => {
 //   // Create new object from original data with different reference, so actual data won't be corrupted.
@@ -78,10 +74,23 @@ storiesOf("Header", module).add("header1", () => {
 //   );
 // });
 
-storiesOf("test component", module).add("test component", () => {
+storiesOf("editor", module).add("Slate Editor", () => {
+  const handleChange = data => {
+    globVal = data;
+    // console.log(globVal);
+  };
   return (
     <ThemeProvider theme={theme}>
-      <ComponentTest />
+      <ComponentTest change={data => handleChange(data)} globVal={globVal} />
+    </ThemeProvider>
+  );
+});
+
+storiesOf("Editor", module).add("Slate preview", () => {
+  console.log(globVal);
+  return (
+    <ThemeProvider theme={theme}>
+      <EditorPasteHtml globVal={globVal} />
     </ThemeProvider>
   );
 });
