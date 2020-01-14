@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { cx, css } from "emotion";
 
 export const Button = React.forwardRef(
-  ({ className, active, reversed, ...props }, ref) => (
+  ({ className, active, hovered, reversed, ...props }, ref) => (
     <span
       {...props}
       ref={ref}
@@ -15,6 +15,8 @@ export const Button = React.forwardRef(
             ? active
               ? "white"
               : "#aaa"
+            : active && hovered
+            ? "white"
             : active
             ? "black"
             : "#ccc"};
