@@ -19,7 +19,7 @@ import theme from "./theme";
 import LayoutFeatures from "../src/constants/constants";
 import data from "./data";
 
-let globVal = [{ type: "paragraph", children: [{ text: "", color: "" }] }];
+let globVal = [{ type: "paragraph", children: [{ text: "", color: "black" }] }];
 
 // storiesOf("Home", module).add("5 in 1", () => {
 //   // Create new object from original data with different reference, so actual data won't be corrupted.

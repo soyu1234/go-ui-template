@@ -11,7 +11,7 @@ import { Editor, Transforms, createEditor, Range } from "slate";
 import { withHistory } from "slate-history";
 import { css } from "emotion";
 import { makeStyles, useTheme } from "@material-ui/core";
-import { SketchPicker } from "react-color";
+import { GithubPicker, CompactPicker } from "react-color";
 
 import FormatBoldIcon from "@material-ui/icons/FormatBold";
 import FormatItalicIcon from "@material-ui/icons/FormatItalic";
@@ -25,7 +25,7 @@ import StrikethroughSIcon from "@material-ui/icons/StrikethroughS";
 import CodeIcon from "@material-ui/icons/Code";
 import StopIcon from "@material-ui/icons/Stop";
 
-import { Button, Icon, Toolbar, Portal, Menu } from "./components";
+import { Button, Icon, Toolbar, Portal, Menu, ColorPicker } from "./components";
 
 const HOTKEYS = {
   "mod+b": "bold",
@@ -56,21 +56,69 @@ const ComponentTest = props => {
   const { slateRoot } = classes;
   const { change, globVal } = props;
   const [value, setValue] = useState(globVal);
+  const [path, setPath] = useState([0, 0]);
   const [background, setBackground] = useState("#fff");
+  const [clickedColorPicker, setClickedColorPicker] = useState(false);
   const renderElement = useCallback(props => <Element {...props} />, []);
   const renderLeaf = useCallback(props => <Leaf {...props} />, []);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
   const setColor = (editor, color) => {
+    editor.removeMark("type");
+    editor.removeMark("color");
     editor.addMark("type", "color");
     editor.addMark("color", color);
   };
 
-  const ColorButton = ({ format, icon, color }) => {
+  const ColorButton = ({ color }) => {
+    console.log(color);
     const editor = useSlate();
+    const ref = useRef();
+    useEffect(() => {
+      const el = ref.current;
+      if (!el) {
+        return;
+      }
+      const rect = document
+        .getElementById("color-button")
+        .getBoundingClientRect();
+      el.style.opacity = 1;
+      el.style.top = `${rect.top + el.offsetHeight / 1.5}px`;
+      el.style.left = `${rect.left - el.offsetHeight / 16}px`;
+    });
     return (
-      <Button onClick={() => setColor(editor, color)}>
+      <Button
+        id="color-button"
+        onClick={() => setClickedColorPicker(!clickedColorPicker)}
+      >
         <StopIcon style={{ color: color }} />
+        <Portal>
+          {clickedColorPicker ? (
+            <div
+              ref={ref}
+              className={css`
+                position: absolute;
+                z-index: 1;
+                top: -10000px;
+                left: -10000px;
+                margin-top: -6px;
+                opacity: 0;
+                border-radius: 4px;
+                transition: opacity 0.75s;
+              `}
+            >
+              <CompactPicker
+                {...props}
+                onChange={color => {
+                  console.log(color);
+                  setColor(editor, color.hex);
+                  setBackground(color.hex);
+                }}
+                color={background}
+              />
+            </div>
+          ) : null}
+        </Portal>
       </Button>
     );
   };
@@ -82,12 +130,17 @@ const ComponentTest = props => {
         value={value}
         onChange={value => {
           console.log(value);
+          console.log(editor);
           setValue(value);
           change(value);
+          if (editor.selection !== null) {
+            setPath(editor.selection.anchor.path);
+          } else {
+            setPath(null);
+          }
         }}
-        // style={{ paddingLeft: "2%" }}
       >
-        <Toolbar>
+        <Toolbar id="slate-toolbar">
           <MarkButton format="bold" icon="format_bold" />
           <MarkButton format="italic" icon="format_italic" />
           <MarkButton format="underline" icon="format_underlined" />
@@ -99,13 +152,16 @@ const ComponentTest = props => {
           <BlockButton format="numbered-list" icon="format_list_numbered" />
           <BlockButton format="bulleted-list" icon="format_list_bulleted" />
           <ColorButton
-            format="orange-color"
-            icon="orange-color"
-            color="orange"
+            format="color"
+            icon="color"
+            color={
+              path !== null ? value[path[0]].children[path[1]].color : "black"
+            }
           />
-          <ColorButton format="black-color" icon="black-color" color="black" />
+          {/* <ColorButton format="black-color" icon="black-color" color="black" /> */}
         </Toolbar>
-        <HoveringToolbar />
+        <HoveringToolbar clickedColorPicker={clickedColorPicker} />
+        {/* <ColorPicker clickedColorPicker={clickedColorPicker} /> */}
         <Editable
           onDOMBeforeInput={event => {
             switch (event.inputType) {
@@ -133,6 +189,7 @@ const ComponentTest = props => {
               }
             }
           }}
+          onClick={() => setClickedColorPicker(false)}
         />
       </Slate>
     </div>
@@ -342,76 +399,9 @@ const MarkButton = ({ format, icon, hovered }) => {
         <CodeIcon />
       ) : icon === "strikethrough" ? (
         <StrikethroughSIcon />
-      ) : icon === "orange-color" ? (
-        <StopIcon style={{ color: "orange" }} />
       ) : null}
     </Button>
   );
-};
-
-// const initialValue = [
-//   {
-//     type: "paragraph",
-//     children: [
-//       { text: "This is editable " },
-//       { text: "rich", bold: true },
-//       { text: " text, " },
-//       { text: "much", italic: true },
-//       { text: " better than a " },
-//       { text: "<textarea>", code: true },
-//       { text: "!" }
-//     ]
-//   },
-//   {
-//     type: "paragraph",
-//     children: [
-//       {
-//         text:
-//           "Since it's rich text, you can do things like turn a selection of text "
-//       },
-//       { text: "bold", bold: true },
-//       {
-//         text:
-//           ", or add a semantically rendered block quote in the middle of the page, like this:"
-//       }
-//     ]
-//   },
-//   {
-//     type: "block-quote",
-//     children: [{ text: "A wise quote." }]
-//   },
-//   {
-//     type: "paragraph",
-//     children: [{ text: "Try it out for yourself!" }]
-//   }
-// ];
-
-const ColorPlugin = {
-  renderMark(props, editor, next) {
-    const { attributes, children, mark } = props;
-    switch (mark.type) {
-      case "color":
-        const color = mark.data.get("color");
-        return (
-          <span {...attributes} style={{ color }}>
-            {children}
-          </span>
-        );
-      default:
-        return next();
-    }
-  },
-  commands: {
-    setColor(editor, color) {
-      editor.removeColor();
-      editor.addMark({ type: "color", data: { color } });
-    },
-    removeColor(editor) {
-      editor.value.marks
-        .filter(mark => mark.type === "color")
-        .map(mark => editor.removeMark(mark));
-    }
-  }
 };
 
 export default ComponentTest;
