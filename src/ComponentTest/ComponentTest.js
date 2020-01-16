@@ -191,11 +191,11 @@ const ComponentTest = props => {
           <BlockButton format="numbered-list" icon="format_list_numbered" />
           <BlockButton format="bulleted-list" icon="format_list_bulleted" />
           <InsertImageButton />
-          <MarkButton
+          {/* <MarkButton
             format="preview"
             icon="preview"
             setClickedPreview={setClickedPreview}
-          />
+          /> */}
           <ColorButton
             format="color"
             icon="color"
