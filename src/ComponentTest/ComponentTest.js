@@ -20,7 +20,7 @@ import {
 import { Editor, Transforms, createEditor, Range, Text } from "slate";
 import { withHistory } from "slate-history";
 import { css } from "emotion";
-import { makeStyles, useTheme, Dialog } from "@material-ui/core";
+import { makeStyles, useTheme, Dialog, Link } from "@material-ui/core";
 import { GithubPicker, CompactPicker } from "react-color";
 import isUrl from "is-url";
 
@@ -37,6 +37,7 @@ import CodeIcon from "@material-ui/icons/Code";
 import PaletteIcon from "@material-ui/icons/Palette";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import ImageIcon from "@material-ui/icons/Image";
+import LinkIcon from "@material-ui/icons/Link";
 
 import { Button, Icon, Toolbar, Portal, Menu, ColorPicker } from "./components";
 import PreviewModal from "./PreviewModal";
@@ -79,7 +80,7 @@ const ComponentTest = props => {
   const renderElement = useCallback(props => <Element {...props} />, []);
   const renderLeaf = useCallback(props => <Leaf {...props} />, [search]);
   const editor = useMemo(
-    () => withImages(withHistory(withReact(createEditor()))),
+    () => withImages(withLinks(withHistory(withReact(createEditor())))),
     []
   );
   const decorate = useCallback(
@@ -191,6 +192,7 @@ const ComponentTest = props => {
           <BlockButton format="numbered-list" icon="format_list_numbered" />
           <BlockButton format="bulleted-list" icon="format_list_bulleted" />
           <InsertImageButton />
+          <LinkButton />
           {/* <MarkButton
             format="preview"
             icon="preview"
@@ -297,8 +299,35 @@ const isMarkActive = (editor, format) => {
   return marks ? marks[format] === true : false;
 };
 
+const isLinkActive = editor => {
+  const [link] = Editor.nodes(editor, { match: n => n.type === "link" });
+  return !!link;
+};
+
+const unwrapLink = editor => {
+  Transforms.unwrapNodes(editor, { match: n => n.type === "link" });
+};
+
+const wrapLink = (editor, url) => {
+  if (isLinkActive(editor)) {
+    unwrapLink(editor);
+    return;
+  }
+
+  const { selection } = editor;
+  const link = {
+    type: "link",
+    url,
+    children: [{ text: editor.children[0].children[0].text, color: "blue" }]
+  };
+
+  const text = { text: "", color: "black" };
+  const paragraph = { type: "paragraph", children: [text] };
+  Transforms.insertNodes(editor, link);
+  Transforms.insertNodes(editor, paragraph);
+};
+
 const Element = ({ attributes, children, element }) => {
-  console.log(attributes);
   switch (element.type) {
     case "block-quote":
       return <blockquote {...attributes}>{children}</blockquote>;
@@ -322,6 +351,14 @@ const Element = ({ attributes, children, element }) => {
           element={element}
         />
       );
+    case "link": {
+      return (
+        <a {...attributes} href={element.url} target="_blank">
+          {children}
+        </a>
+      );
+    }
+
     default:
       return <p {...attributes}>{children}</p>;
   }
@@ -402,6 +439,40 @@ const withImages = editor => {
   };
 
   return editor;
+};
+
+const withLinks = editor => {
+  const { insertData, insertText, isInline } = editor;
+
+  editor.isInline = element => {
+    return element.type === "link" ? true : isInline(element);
+  };
+
+  editor.insertText = text => {
+    if (text && isUrl(text)) {
+      wrapLink(editor, text);
+    } else {
+      insertText(text);
+    }
+  };
+
+  editor.insertData = data => {
+    const text = data.getData("text/plain");
+
+    if (text && isUrl(text)) {
+      wrapLink(editor, text);
+    } else {
+      insertData(data);
+    }
+  };
+
+  return editor;
+};
+
+const insertLink = (editor, url) => {
+  if (editor.selection) {
+    wrapLink(editor, url);
+  }
 };
 
 const HoveringToolbar = () => {
@@ -580,6 +651,29 @@ const InsertImageButton = () => {
       }}
     >
       <ImageIcon />
+    </Button>
+  );
+};
+
+/////////////// Links
+
+const LinkButton = () => {
+  const editor = useSlate();
+  return (
+    <Button
+      active={isLinkActive(editor)}
+      onMouseDown={event => {
+        event.preventDefault();
+        if (isLinkActive(editor)) {
+          insertLink(editor, "");
+          return;
+        }
+        const url = window.prompt("Enter the URL of the link:");
+        if (!url) return;
+        insertLink(editor, url);
+      }}
+    >
+      <LinkIcon />
     </Button>
   );
 };
