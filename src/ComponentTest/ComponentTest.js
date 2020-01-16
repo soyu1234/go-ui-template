@@ -6,12 +6,23 @@ import React, {
   useRef
 } from "react";
 import isHotkey from "is-hotkey";
-import { Editable, withReact, useSlate, Slate, ReactEditor } from "slate-react";
+import imageExtensions from "image-extensions";
+import {
+  Editable,
+  withReact,
+  useSlate,
+  Slate,
+  ReactEditor,
+  useEditor,
+  useSelected,
+  useFocused
+} from "slate-react";
 import { Editor, Transforms, createEditor, Range, Text } from "slate";
 import { withHistory } from "slate-history";
 import { css } from "emotion";
 import { makeStyles, useTheme, Dialog } from "@material-ui/core";
 import { GithubPicker, CompactPicker } from "react-color";
+import isUrl from "is-url";
 
 import FormatBoldIcon from "@material-ui/icons/FormatBold";
 import FormatItalicIcon from "@material-ui/icons/FormatItalic";
@@ -25,6 +36,7 @@ import StrikethroughSIcon from "@material-ui/icons/StrikethroughS";
 import CodeIcon from "@material-ui/icons/Code";
 import PaletteIcon from "@material-ui/icons/Palette";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
+import ImageIcon from "@material-ui/icons/Image";
 
 import { Button, Icon, Toolbar, Portal, Menu, ColorPicker } from "./components";
 import PreviewModal from "./PreviewModal";
@@ -66,8 +78,10 @@ const ComponentTest = props => {
   const [clickedColorPicker, setClickedColorPicker] = useState(false);
   const renderElement = useCallback(props => <Element {...props} />, []);
   const renderLeaf = useCallback(props => <Leaf {...props} />, [search]);
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-
+  const editor = useMemo(
+    () => withImages(withHistory(withReact(createEditor()))),
+    []
+  );
   const decorate = useCallback(
     ([node, path]) => {
       const ranges = [];
@@ -86,7 +100,6 @@ const ComponentTest = props => {
           offset = offset + part.length + search.length;
         });
       }
-      console.log(ranges);
       return ranges;
     },
     [search]
@@ -158,6 +171,7 @@ const ComponentTest = props => {
         onChange={value => {
           setValue(value);
           change(value);
+          console.log(value);
           if (editor.selection !== null) {
             setPath(editor.selection.anchor.path);
           } else {
@@ -176,6 +190,7 @@ const ComponentTest = props => {
           <BlockButton format="block-quote" icon="format_quote" />
           <BlockButton format="numbered-list" icon="format_list_numbered" />
           <BlockButton format="bulleted-list" icon="format_list_bulleted" />
+          <InsertImageButton />
           <MarkButton
             format="preview"
             icon="preview"
@@ -270,12 +285,20 @@ const isBlockActive = (editor, format) => {
   return !!match;
 };
 
+const isImageUrl = url => {
+  if (!url) return false;
+  if (!isUrl(url)) return false;
+  const ext = new URL(url).pathname.split(".").pop();
+  return imageExtensions.includes(ext);
+};
+
 const isMarkActive = (editor, format) => {
   const marks = Editor.marks(editor);
   return marks ? marks[format] === true : false;
 };
 
 const Element = ({ attributes, children, element }) => {
+  console.log(attributes);
   switch (element.type) {
     case "block-quote":
       return <blockquote {...attributes}>{children}</blockquote>;
@@ -291,6 +314,14 @@ const Element = ({ attributes, children, element }) => {
       return <ol {...attributes}>{children}</ol>;
     case "strikethrough":
       return <del {...attributes}>{children}</del>;
+    case "image":
+      return (
+        <ImageElement
+          attributes={attributes}
+          children={children}
+          element={element}
+        />
+      );
     default:
       return <p {...attributes}>{children}</p>;
   }
@@ -328,6 +359,49 @@ const Leaf = ({ attributes, children, leaf }) => {
       {children}
     </span>
   );
+};
+
+const insertImage = (editor, url) => {
+  const text = { text: "", color: "black" };
+  const image = { type: "image", url, children: [text] };
+  const paragraph = { type: "paragraph", children: [text] };
+  Transforms.insertNodes(editor, image);
+  Transforms.insertNodes(editor, paragraph);
+};
+
+const withImages = editor => {
+  const { insertData, isVoid } = editor;
+
+  editor.isVoid = element => {
+    return element.type === "image" ? true : isVoid(element);
+  };
+
+  editor.insertData = data => {
+    const text = data.getData("text/plain");
+    const { files } = data;
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const reader = new FileReader();
+        const [mime] = file.type.split("/");
+
+        if (mime === "image") {
+          reader.addEventListener("load", () => {
+            const url = reader.result;
+            insertImage(editor, url);
+          });
+
+          reader.readAsDataURL(file);
+        }
+      }
+    } else if (isImageUrl(text)) {
+      insertImage(editor, text);
+    } else {
+      insertData(data);
+    }
+  };
+
+  return editor;
 };
 
 const HoveringToolbar = () => {
@@ -421,7 +495,6 @@ const BlockButton = ({ format, icon }) => {
 
 const MarkButton = ({ format, icon, hovered, setClickedPreview }) => {
   const editor = useSlate();
-  // console.log(Icon);
   return (
     <Button
       active={isMarkActive(editor, format)}
@@ -462,7 +535,6 @@ const SearchBar = ({ setSearch, search }) => {
       >
         {clickedSearchBar ? (
           <input
-            type="search"
             placeholder="Search the text..."
             onChange={e => setSearch(e.target.value)}
             value={search}
@@ -470,6 +542,45 @@ const SearchBar = ({ setSearch, search }) => {
         ) : null}
       </label>
     </div>
+  );
+};
+
+//////////// Images //////////////
+
+const ImageElement = ({ attributes, children, element }) => {
+  const selected = useSelected();
+  const focused = useFocused();
+  return (
+    <div {...attributes}>
+      <div contentEditable={false}>
+        <img
+          src={element.url}
+          className={css`
+            display: block;
+            max-width: 100%;
+            max-height: 20em;
+            box-shadow: ${selected && focused ? "0 0 0 3px #B4D5FF" : "none"};
+          `}
+        />
+      </div>
+      {children}
+    </div>
+  );
+};
+
+const InsertImageButton = () => {
+  const editor = useEditor();
+  return (
+    <Button
+      onMouseDown={event => {
+        event.preventDefault();
+        const url = window.prompt("Enter the URL of the image:");
+        if (!url) return;
+        insertImage(editor, url);
+      }}
+    >
+      <ImageIcon />
+    </Button>
   );
 };
 
