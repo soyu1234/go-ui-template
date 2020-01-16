@@ -180,7 +180,7 @@ const Element = props => {
       return <ol {...attributes}>{children}</ol>;
     case "link":
       return (
-        <a href={element.url} {...attributes}>
+        <a href={element.url} {...attributes} target="_blank">
           {children}
         </a>
       );
