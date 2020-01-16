@@ -7,10 +7,10 @@ import React, {
 } from "react";
 import isHotkey from "is-hotkey";
 import { Editable, withReact, useSlate, Slate, ReactEditor } from "slate-react";
-import { Editor, Transforms, createEditor, Range } from "slate";
+import { Editor, Transforms, createEditor, Range, Text } from "slate";
 import { withHistory } from "slate-history";
 import { css } from "emotion";
-import { makeStyles, useTheme } from "@material-ui/core";
+import { makeStyles, useTheme, Dialog } from "@material-ui/core";
 import { GithubPicker, CompactPicker } from "react-color";
 
 import FormatBoldIcon from "@material-ui/icons/FormatBold";
@@ -23,9 +23,12 @@ import FormatListNumberedIcon from "@material-ui/icons/FormatListNumbered";
 import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
 import StrikethroughSIcon from "@material-ui/icons/StrikethroughS";
 import CodeIcon from "@material-ui/icons/Code";
-import StopIcon from "@material-ui/icons/Stop";
+import PaletteIcon from "@material-ui/icons/Palette";
+import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 
 import { Button, Icon, Toolbar, Portal, Menu, ColorPicker } from "./components";
+import PreviewModal from "./PreviewModal";
+import "./componentTest.css";
 
 const HOTKEYS = {
   "mod+b": "bold",
@@ -57,11 +60,37 @@ const ComponentTest = props => {
   const { change, globVal } = props;
   const [value, setValue] = useState(globVal);
   const [path, setPath] = useState([0, 0]);
+  const [clickedPreview, setClickedPreview] = useState(false);
   const [background, setBackground] = useState("#fff");
+  const [search, setSearch] = useState("");
   const [clickedColorPicker, setClickedColorPicker] = useState(false);
   const renderElement = useCallback(props => <Element {...props} />, []);
-  const renderLeaf = useCallback(props => <Leaf {...props} />, []);
+  const renderLeaf = useCallback(props => <Leaf {...props} />, [search]);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+
+  const decorate = useCallback(
+    ([node, path]) => {
+      const ranges = [];
+      if (search && Text.isText(node)) {
+        const { text } = node;
+        const parts = text.split(search);
+        let offset = 0;
+        parts.forEach((part, i) => {
+          if (i !== 0) {
+            ranges.push({
+              anchor: { path, offset: offset - search.length },
+              focus: { path, offset },
+              highlight: true
+            });
+          }
+          offset = offset + part.length + search.length;
+        });
+      }
+      console.log(ranges);
+      return ranges;
+    },
+    [search]
+  );
 
   const setColor = (editor, color) => {
     editor.removeMark("type");
@@ -71,7 +100,6 @@ const ComponentTest = props => {
   };
 
   const ColorButton = ({ color }) => {
-    console.log(color);
     const editor = useSlate();
     const ref = useRef();
     useEffect(() => {
@@ -91,7 +119,7 @@ const ComponentTest = props => {
         id="color-button"
         onClick={() => setClickedColorPicker(!clickedColorPicker)}
       >
-        <StopIcon style={{ color: color }} />
+        <PaletteIcon style={{ color: color }} />
         <Portal>
           {clickedColorPicker ? (
             <div
@@ -110,7 +138,6 @@ const ComponentTest = props => {
               <CompactPicker
                 {...props}
                 onChange={color => {
-                  console.log(color);
                   setColor(editor, color.hex);
                   setBackground(color.hex);
                 }}
@@ -129,8 +156,6 @@ const ComponentTest = props => {
         editor={editor}
         value={value}
         onChange={value => {
-          console.log(value);
-          console.log(editor);
           setValue(value);
           change(value);
           if (editor.selection !== null) {
@@ -151,6 +176,11 @@ const ComponentTest = props => {
           <BlockButton format="block-quote" icon="format_quote" />
           <BlockButton format="numbered-list" icon="format_list_numbered" />
           <BlockButton format="bulleted-list" icon="format_list_bulleted" />
+          <MarkButton
+            format="preview"
+            icon="preview"
+            setClickedPreview={setClickedPreview}
+          />
           <ColorButton
             format="color"
             icon="color"
@@ -158,11 +188,13 @@ const ComponentTest = props => {
               path !== null ? value[path[0]].children[path[1]].color : "black"
             }
           />
+          <SearchBar setSearch={setSearch} search={search} />
           {/* <ColorButton format="black-color" icon="black-color" color="black" /> */}
         </Toolbar>
         <HoveringToolbar clickedColorPicker={clickedColorPicker} />
         {/* <ColorPicker clickedColorPicker={clickedColorPicker} /> */}
         <Editable
+          decorate={decorate}
           onDOMBeforeInput={event => {
             switch (event.inputType) {
               case "formatBold":
@@ -192,6 +224,11 @@ const ComponentTest = props => {
           onClick={() => setClickedColorPicker(false)}
         />
       </Slate>
+      <PreviewModal
+        clickedPreview={clickedPreview}
+        value={value}
+        setClickedPreview={setClickedPreview}
+      />
     </div>
   );
 };
@@ -260,7 +297,6 @@ const Element = ({ attributes, children, element }) => {
 };
 
 const Leaf = ({ attributes, children, leaf }) => {
-  console.log(leaf);
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -282,7 +318,13 @@ const Leaf = ({ attributes, children, leaf }) => {
   }
 
   return (
-    <span style={{ color: leaf.color ? leaf.color : "black" }} {...attributes}>
+    <span
+      style={{
+        color: leaf.color ? leaf.color : "black",
+        backgroundColor: leaf.highlight ? "#ffeeba" : ""
+      }}
+      {...attributes}
+    >
       {children}
     </span>
   );
@@ -377,7 +419,7 @@ const BlockButton = ({ format, icon }) => {
   );
 };
 
-const MarkButton = ({ format, icon, hovered }) => {
+const MarkButton = ({ format, icon, hovered, setClickedPreview }) => {
   const editor = useSlate();
   // console.log(Icon);
   return (
@@ -388,6 +430,7 @@ const MarkButton = ({ format, icon, hovered }) => {
         toggleMark(editor, format);
       }}
       hovered={hovered}
+      onClick={() => (setClickedPreview ? setClickedPreview(true) : null)}
     >
       {icon === "format_bold" ? (
         <FormatBoldIcon />
@@ -399,8 +442,34 @@ const MarkButton = ({ format, icon, hovered }) => {
         <CodeIcon />
       ) : icon === "strikethrough" ? (
         <StrikethroughSIcon />
+      ) : icon === "preview" ? (
+        <InsertDriveFileIcon />
       ) : null}
     </Button>
+  );
+};
+
+const SearchBar = ({ setSearch, search }) => {
+  const [clickedSearchBar, setClickedSearchBar] = useState(false);
+  return (
+    <div
+      onClick={() => setClickedSearchBar(true)}
+      onBlur={() => setClickedSearchBar(false)}
+    >
+      <label
+        className={!clickedSearchBar ? "search" : "search searchBox"}
+        // htmlFor="inpt_search"
+      >
+        {clickedSearchBar ? (
+          <input
+            type="search"
+            placeholder="Search the text..."
+            onChange={e => setSearch(e.target.value)}
+            value={search}
+          />
+        ) : null}
+      </label>
+    </div>
   );
 };
 
