@@ -17,7 +17,7 @@
   box-sizing: border-box;
   /* margin: 0px 8px 7px 0px;
   padding: 7px 9px 0px 9px; */
-  border: 3px solid #000;
+  border: 3px solid #ccc;
   border-radius: 25px;
   transition: all 200ms ease;
   cursor: pointer;
@@ -31,7 +31,7 @@
   height: 10px;
   right: -4px;
   top: 6px;
-  background: #000;
+  background: #ccc;
   border-radius: 3px;
   transform: rotate(-45deg);
   transition: all 200ms ease;
@@ -44,6 +44,14 @@
   padding-top: 0px;
   margin-right: 0px;
   bottom: 5px;
+  border: 3px solid #000;
+}
+
+.search:hover {
+  border-color: #000;
+}
+.search:hover::after {
+  background: #000;
 }
 
 .searchBox:after {
