@@ -10,8 +10,6 @@ import PrivacyReviewLogoDark from "../assets/search.svg";
 import PrivacyReviewLogoLight from "../assets/search-light.svg";
 import { ReviewModal } from "../ReviewModal";
 
-import "./footerLeft.css";
-
 //#1F1A24
 const useStyles = makeStyles(theme => ({
   footer: {
@@ -48,6 +46,34 @@ const useStyles = makeStyles(theme => ({
       width: "64px",
       height: "64px"
     }
+  },
+  content: {
+    position: "relative",
+    textDecoration: "none",
+    "&:hover": {
+      color: "#FFAB40"
+    },
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      width: "100%",
+      height: "2px",
+      bottom: "0",
+      left: "0",
+      backgroundColor: "#FFAB40",
+      visibility: "hidden",
+      WebkitTransform: "scaleX(0)",
+      transform: "scaleX(0)",
+      WebkitTransition: "all 0.5s ease-in-out 0s",
+      transition: "all 0.5s ease-in-out 0s",
+      textDecoration: "none"
+    },
+
+    "&:hover::before": {
+      visibility: "visible",
+      WebkitTransform: "scaleX(1)",
+      transform: "scaleX(1)"
+    }
   }
 }));
 
@@ -80,7 +106,7 @@ const PrivacyPolicy = props => {
       <Link
         style={{ textDecoration: "none" }}
         color="inherit"
-        className="content"
+        className={content}
         href={privacyUrl}
         target="_blank"
         rel="noopener"
@@ -110,12 +136,14 @@ const FooterLogo = props => {
 
 const ReviewAndTerms = props => {
   const { termsAndConditionsUrl } = props;
+  const classes = useStyles();
+  const { content } = classes;
   return (
     <Grid item>
       <Link
         style={{ textDecoration: "none" }}
         color="inherit"
-        className="content"
+        className={content}
         href={termsAndConditionsUrl}
         target="_blank"
         rel="noopener"
@@ -128,12 +156,14 @@ const ReviewAndTerms = props => {
 
 const ReviewPrivacyTerms = props => {
   const { handleOpen } = props;
+  const classes = useStyles();
+  const { content } = classes;
   return (
     <Grid item>
       <Link
         style={{ textDecoration: "none", cursor: "pointer" }}
         color="inherit"
-        className="content"
+        className={content}
         onClick={handleOpen}
       >
         Review privacy preferences
