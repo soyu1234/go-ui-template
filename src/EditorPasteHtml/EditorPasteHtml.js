@@ -14,7 +14,7 @@ import {
 import { makeStyles } from "@material-ui/core";
 
 const ELEMENT_TAGS = {
-  A: el => ({ type: "link", url: el.getAttribute("href") }),
+  A: el => ({ type: "link", url: el.getAttribute("href"), color: "blue" }),
   BLOCKQUOTE: () => ({ type: "quote" }),
   H1: () => ({ type: "heading-one" }),
   H2: () => ({ type: "heading-two" }),
@@ -71,6 +71,7 @@ export const deserialize = el => {
 
   if (ELEMENT_TAGS[nodeName]) {
     const attrs = ELEMENT_TAGS[nodeName](el);
+    console.log(jsx("element", attrs, children));
     return jsx("element", attrs, children);
   }
 
@@ -87,9 +88,9 @@ const useStyles = makeStyles(theme => ({
     backgroundColor:
       theme.palette.type === "light"
         ? theme.palette.background.paper
-        : "#2a2330",
-    marginLeft: "30px",
-    marginTop: "10px"
+        : "#2a2330"
+    // marginLeft: "30px",
+    // marginTop: "10px"
   }
 }));
 
@@ -152,8 +153,20 @@ const Element = props => {
   switch (element.type) {
     default:
       return <p {...attributes}>{children}</p>;
-    case "quote":
-      return <blockquote {...attributes}>{children}</blockquote>;
+    case "block-quote":
+      return (
+        <blockquote
+          style={{
+            borderLeft: "2px solid grey",
+            borderSpacing: "15px",
+            color: "grey"
+          }}
+          {...attributes}
+        >
+          {"  "}
+          {children}
+        </blockquote>
+      );
     case "code":
       return (
         <pre>

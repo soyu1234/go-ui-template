@@ -23,12 +23,17 @@ import { css } from "emotion";
 import { makeStyles, useTheme, Dialog, Link } from "@material-ui/core";
 import { GithubPicker, CompactPicker } from "react-color";
 import isUrl from "is-url";
+import { jsx } from "slate-hyperscript";
 
 import FormatBoldIcon from "@material-ui/icons/FormatBold";
 import FormatItalicIcon from "@material-ui/icons/FormatItalic";
 import FormatUnderlinedIcon from "@material-ui/icons/FormatUnderlined";
 import LooksOneIcon from "@material-ui/icons/LooksOne";
 import LooksTwoIcon from "@material-ui/icons/LooksTwo";
+import Looks3Icon from "@material-ui/icons/Looks3";
+import Looks4Icon from "@material-ui/icons/Looks4";
+import Looks5Icon from "@material-ui/icons/Looks5";
+import Looks6Icon from "@material-ui/icons/Looks6";
 import FormatQuoteIcon from "@material-ui/icons/FormatQuote";
 import FormatListNumberedIcon from "@material-ui/icons/FormatListNumbered";
 import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
@@ -41,6 +46,7 @@ import LinkIcon from "@material-ui/icons/Link";
 
 import { Button, Icon, Toolbar, Portal, Menu, ColorPicker } from "./components";
 import PreviewModal from "./PreviewModal";
+import { ELEMENT_TAGS, TEXT_TAGS } from "./constants";
 import "./componentTest.css";
 
 const HOTKEYS = {
@@ -62,6 +68,11 @@ const useStyles = makeStyles(theme => ({
     marginLeft: "30px",
     marginRight: "30px",
     marginTop: "10px"
+  },
+  paletteIcon: {
+    "&:hover": {
+      color: "#000"
+    }
   }
 }));
 
@@ -78,9 +89,13 @@ const ComponentTest = props => {
   const [search, setSearch] = useState("");
   const [clickedColorPicker, setClickedColorPicker] = useState(false);
   const renderElement = useCallback(props => <Element {...props} />, []);
-  const renderLeaf = useCallback(props => <Leaf {...props} />, [search]);
+  const renderLeaf = useCallback(props => <Leaf {...props} />, [
+    search,
+    clickedPreview
+  ]);
   const editor = useMemo(
-    () => withImages(withLinks(withHistory(withReact(createEditor())))),
+    () =>
+      withImages(withHtml(withLinks(withHistory(withReact(createEditor()))))),
     []
   );
   const decorate = useCallback(
@@ -116,6 +131,8 @@ const ComponentTest = props => {
   const ColorButton = ({ color }) => {
     const editor = useSlate();
     const ref = useRef();
+    const classes = useStyles();
+    const { paletteIcon } = classes;
     useEffect(() => {
       const el = ref.current;
       if (!el) {
@@ -128,12 +145,13 @@ const ComponentTest = props => {
       el.style.top = `${rect.top + el.offsetHeight / 1.5}px`;
       el.style.left = `${rect.left - el.offsetHeight / 16}px`;
     });
+    console.log(color);
     return (
       <Button
         id="color-button"
         onClick={() => setClickedColorPicker(!clickedColorPicker)}
       >
-        <PaletteIcon style={{ color: color }} />
+        <PaletteIcon className={paletteIcon} style={{ color: color }} />
         <Portal>
           {clickedColorPicker ? (
             <div
@@ -172,7 +190,6 @@ const ComponentTest = props => {
         onChange={value => {
           setValue(value);
           change(value);
-          console.log(value);
           if (editor.selection !== null) {
             setPath(editor.selection.anchor.path);
           } else {
@@ -188,21 +205,25 @@ const ComponentTest = props => {
           <MarkButton format="strikethrough" icon="strikethrough" />
           <BlockButton format="heading-one" icon="looks_one" />
           <BlockButton format="heading-two" icon="looks_two" />
+          <BlockButton format="heading-three" icon="looks_three" />
+          <BlockButton format="heading-four" icon="looks_four" />
+          <BlockButton format="heading-five" icon="looks_five" />
+          <BlockButton format="heading-six" icon="looks_six" />
           <BlockButton format="block-quote" icon="format_quote" />
           <BlockButton format="numbered-list" icon="format_list_numbered" />
           <BlockButton format="bulleted-list" icon="format_list_bulleted" />
           <InsertImageButton />
           <LinkButton />
-          {/* <MarkButton
+          <MarkButton
             format="preview"
             icon="preview"
             setClickedPreview={setClickedPreview}
-          /> */}
+          />
           <ColorButton
             format="color"
             icon="color"
             color={
-              path !== null ? value[path[0]].children[path[1]].color : "black"
+              path !== null ? value[path[0]].children[path[1]].color : "#ccc"
             }
           />
           <SearchBar setSearch={setSearch} search={search} />
@@ -240,14 +261,82 @@ const ComponentTest = props => {
           }}
           onClick={() => setClickedColorPicker(false)}
         />
+        <PreviewModal
+          clickedPreview={clickedPreview}
+          value={value}
+          setClickedPreview={setClickedPreview}
+        />
       </Slate>
-      <PreviewModal
-        clickedPreview={clickedPreview}
-        value={value}
-        setClickedPreview={setClickedPreview}
-      />
     </div>
   );
+};
+
+export const deserialize = el => {
+  if (el.nodeType === 3) {
+    return el.textContent;
+  } else if (el.nodeType !== 1) {
+    return null;
+  } else if (el.nodeName === "BR") {
+    return "\n";
+  }
+
+  const { nodeName } = el;
+  let parent = el;
+
+  if (
+    nodeName === "PRE" &&
+    el.childNodes[0] &&
+    el.childNodes[0].nodeName === "CODE"
+  ) {
+    parent = el.childNodes[0];
+  }
+
+  const children = Array.from(parent.childNodes)
+    .map(deserialize)
+    .flat();
+
+  if (el.nodeName === "BODY") {
+    return jsx("fragment", {}, children);
+  }
+
+  if (ELEMENT_TAGS[nodeName]) {
+    const attrs = ELEMENT_TAGS[nodeName](el);
+    return jsx("element", attrs, children);
+  }
+
+  if (TEXT_TAGS[nodeName]) {
+    const attrs = TEXT_TAGS[nodeName](el);
+    return children.map(child => jsx("text", attrs, child));
+  }
+
+  return children;
+};
+
+const withHtml = editor => {
+  const { insertData, isInline, isVoid } = editor;
+
+  editor.isInline = element => {
+    return element.type === "link" ? true : isInline(element);
+  };
+
+  editor.isVoid = element => {
+    return element.type === "image" ? true : isVoid(element);
+  };
+
+  editor.insertData = data => {
+    const html = data.getData("text/html");
+
+    if (html) {
+      const parsed = new DOMParser().parseFromString(html, "text/html");
+      const fragment = deserialize(parsed.body);
+      Transforms.insertFragment(editor, fragment);
+      return;
+    }
+
+    insertData(data);
+  };
+
+  return editor;
 };
 
 const toggleBlock = (editor, format) => {
@@ -315,16 +404,28 @@ const wrapLink = (editor, url) => {
   }
 
   const { selection } = editor;
+  const anchorPath = selection.anchor.path[0];
+  const anchorOffset = selection.anchor.offset;
+  const focusPath = selection.focus.path[1];
+  const focusOffset = selection.focus.offset;
   const link = {
     type: "link",
     url,
-    children: [{ text: editor.children[0].children[0].text, color: "blue" }]
+    children: [
+      {
+        text: editor.children[anchorPath].children[focusPath].text.slice(
+          anchorOffset,
+          focusOffset
+        ),
+        color: "blue"
+      }
+    ]
   };
 
   const text = { text: "", color: "black" };
   const paragraph = { type: "paragraph", children: [text] };
   Transforms.insertNodes(editor, link);
-  Transforms.insertNodes(editor, paragraph);
+  // Transforms.insertNodes(editor, paragraph);
 };
 
 const Element = ({ attributes, children, element }) => {
@@ -337,6 +438,14 @@ const Element = ({ attributes, children, element }) => {
       return <h1 {...attributes}>{children}</h1>;
     case "heading-two":
       return <h2 {...attributes}>{children}</h2>;
+    case "heading-three":
+      return <h3 {...attributes}>{children}</h3>;
+    case "heading-four":
+      return <h4 {...attributes}>{children}</h4>;
+    case "heading-five":
+      return <h5 {...attributes}>{children}</h5>;
+    case "heading-six":
+      return <h6 {...attributes}>{children}</h6>;
     case "list-item":
       return <li {...attributes}>{children}</li>;
     case "numbered-list":
@@ -559,6 +668,14 @@ const BlockButton = ({ format, icon }) => {
         <FormatListNumberedIcon />
       ) : icon === "format_list_bulleted" ? (
         <FormatListBulletedIcon />
+      ) : icon === "looks_three" ? (
+        <Looks3Icon />
+      ) : icon === "looks_four" ? (
+        <Looks4Icon />
+      ) : icon === "looks_five" ? (
+        <Looks5Icon />
+      ) : icon === "looks_six" ? (
+        <Looks6Icon />
       ) : null}
     </Button>
   );
@@ -571,7 +688,9 @@ const MarkButton = ({ format, icon, hovered, setClickedPreview }) => {
       active={isMarkActive(editor, format)}
       onMouseDown={event => {
         event.preventDefault();
-        toggleMark(editor, format);
+        if (icon !== "preview") {
+          toggleMark(editor, format);
+        }
       }}
       hovered={hovered}
       onClick={() => (setClickedPreview ? setClickedPreview(true) : null)}
@@ -595,6 +714,9 @@ const MarkButton = ({ format, icon, hovered, setClickedPreview }) => {
 
 const SearchBar = ({ setSearch, search }) => {
   const [clickedSearchBar, setClickedSearchBar] = useState(false);
+  const [hoveredSearchBar, setHoveredSearchBar] = useState(false);
+  const editor = useSlate();
+  const format = "search";
   return (
     <div
       onClick={() => setClickedSearchBar(true)}
@@ -602,6 +724,7 @@ const SearchBar = ({ setSearch, search }) => {
     >
       <label
         className={!clickedSearchBar ? "search" : "search searchBox"}
+        // style={hoveredSearchBar ? { borderColor: "red" } : null}
         // htmlFor="inpt_search"
       >
         {clickedSearchBar ? (
