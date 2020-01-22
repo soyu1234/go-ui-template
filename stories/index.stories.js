@@ -10,8 +10,9 @@ import { FooterLeft } from "../src/FooterLeft";
 import { Header } from "../src/Header";
 import { ReviewModal } from "../src/ReviewModal";
 import { ComponentTest } from "../src/ComponentTest";
-
-import { EditorPasteHtml } from "../src/EditorPasteHtml";
+// import { CardComponent } from "../src/CardComponent";
+// import { ReviewModal } from "../src/ReviewModal";
+import { FooterPlain } from "../src/FooterPlain";
 
 import theme from "./theme";
 
@@ -59,9 +60,14 @@ storiesOf("Footer", module).add("footerLeft", () => {
 });
 
 storiesOf("Header", module).add("header1", () => {
+  const props = {
+    logo:
+      "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png",
+    name: "Orbit"
+  };
   return (
     <ThemeProvider theme={theme}>
-      <Header themeMode={theme.palette.type} />
+      <Header {...props} />
     </ThemeProvider>
   );
 });
@@ -86,11 +92,44 @@ storiesOf("editor", module).add("Slate Editor", () => {
   );
 });
 
-storiesOf("Editor", module).add("Slate preview", () => {
+storiesOf("Editor", module).add(
+  "Slate empty preview while data is loading",
+  () => {
+    console.log(globVal);
+    return (
+      <ThemeProvider theme={theme}>
+        <ReviewModal data={globVal} />
+      </ThemeProvider>
+    );
+  }
+);
+
+storiesOf("Editor", module).add("Slate preview with data", () => {
+  const data = [
+    { type: "paragraph", children: [{ text: "", color: "black" }] },
+    { type: "paragraph", children: [{ text: "hello", color: "black" }] }
+  ];
   console.log(globVal);
   return (
     <ThemeProvider theme={theme}>
-      <EditorPasteHtml globVal={globVal} />
+      <ReviewModal data={data} />
+    </ThemeProvider>
+  );
+});
+
+storiesOf("Footer", module).add("Simpler Footer", () => {
+  const footerProps = {
+    theme: theme,
+    url: "https://gamedistribution.com/",
+    website: "Game Distribution",
+    privacyAndTermsApi: "http://localhost:6007/iframe.html?id=home--default",
+    logoUrl:
+      "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png",
+    data: [{ type: "paragraph", children: [{ text: "a" }] }]
+  };
+  return (
+    <ThemeProvider theme={theme}>
+      <FooterPlain {...footerProps} />
     </ThemeProvider>
   );
 });

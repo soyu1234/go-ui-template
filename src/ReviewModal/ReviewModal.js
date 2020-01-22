@@ -1,211 +1,337 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { jsx } from "slate-hyperscript";
+import { Transforms, createEditor } from "slate";
+import { withHistory } from "slate-history";
+import { css } from "emotion";
 import {
-  Grid,
-  Link,
+  Slate,
+  Editable,
+  withReact,
+  useSelected,
+  useFocused
+} from "slate-react";
+
+import {
   makeStyles,
-  Button,
   Dialog,
-  DialogActions,
+  Grid,
   DialogContent,
-  DialogContentText,
-  DialogTitle,
-  useTheme
+  Button
 } from "@material-ui/core";
+import { useTheme } from "@material-ui/core/styles";
+import axios from "axios";
+
+const ELEMENT_TAGS = {
+  A: el => ({ type: "link", url: el.getAttribute("href"), color: "blue" }),
+  BLOCKQUOTE: () => ({ type: "quote" }),
+  H1: () => ({ type: "heading-one" }),
+  H2: () => ({ type: "heading-two" }),
+  H3: () => ({ type: "heading-three" }),
+  H4: () => ({ type: "heading-four" }),
+  H5: () => ({ type: "heading-five" }),
+  H6: () => ({ type: "heading-six" }),
+  IMG: el => ({ type: "image", url: el.getAttribute("src") }),
+  LI: () => ({ type: "list-item" }),
+  OL: () => ({ type: "numbered-list" }),
+  P: () => ({ type: "paragraph" }),
+  PRE: () => ({ type: "code" }),
+  UL: () => ({ type: "bulleted-list" })
+};
+
+// COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
+const TEXT_TAGS = {
+  CODE: () => ({ code: true }),
+  DEL: () => ({ strikethrough: true }),
+  EM: () => ({ italic: true }),
+  I: () => ({ italic: true }),
+  S: () => ({ strikethrough: true }),
+  STRONG: () => ({ bold: true }),
+  U: () => ({ underline: true })
+};
+
+export const deserialize = el => {
+  if (el.nodeType === 3) {
+    return el.textContent;
+  } else if (el.nodeType !== 1) {
+    return null;
+  } else if (el.nodeName === "BR") {
+    return "\n";
+  }
+
+  const { nodeName } = el;
+  let parent = el;
+
+  if (
+    nodeName === "PRE" &&
+    el.childNodes[0] &&
+    el.childNodes[0].nodeName === "CODE"
+  ) {
+    parent = el.childNodes[0];
+  }
+
+  const children = Array.from(parent.childNodes)
+    .map(deserialize)
+    .flat();
+
+  if (el.nodeName === "BODY") {
+    return jsx("fragment", {}, children);
+  }
+
+  if (ELEMENT_TAGS[nodeName]) {
+    const attrs = ELEMENT_TAGS[nodeName](el);
+    return jsx("element", attrs, children);
+  }
+
+  if (TEXT_TAGS[nodeName]) {
+    const attrs = TEXT_TAGS[nodeName](el);
+    return children.map(child => jsx("text", attrs, child));
+  }
+
+  return children;
+};
 
 const useStyles = makeStyles(theme => ({
-  orbitLogo: {
-    width: "75px",
-    height: "75px",
-    paddingTop: "10px",
-    paddingBottom: "10px"
-  },
-  dialogTitle: {
-    "& > h2": {
-      fontSize: "24px",
-      fontWeight: "550"
-    },
-    borderBottom: "1px solid #ffb447",
-    boxShadow: "0 2px #ffb447"
+  htmlEditor: {
+    // backgroundColor:
+    //   theme.palette.type === "light"
+    //     ? theme.palette.background.paper
+    //     : "#2a2330"
+    // marginLeft: "30px",
+    // marginTop: "10px"
   },
   dialogContainer: {
-    fontFamily: "'Lato', sans-serif;",
-    backgroundColor:
-      theme.palette.type === "light"
-        ? theme.palette.background.paper
-        : "#2a2330"
+    fontFamily: "'Lato', sans-serif;"
   },
-  dialogContent: {
-    "& > h3": {
-      color: theme.palette.type === "light" ? "#37474f" : "#5F9CA6"
-    }
-  },
-  dialogContentText: {
-    color: theme.palette.type === "light" ? "black" : "#C0A080"
-  },
-  dialogActions: {
-    alignItems: "center",
-    justify: "center",
-    backgroundColor:
-      theme.palette.type === "light"
-        ? theme.palette.background.paper
-        : "#2a2330"
-  },
-  buttons: {
-    display: "inline-flex;",
-    height: "40px;",
-    width: "150px;",
-    border: "2px solid #FFC247;",
-    margin: " 20px 20px 20px 20px;",
-    color: " #FFC247;",
-    textTransform: "uppercase;",
-    textDecoration: "none",
-    fontSize: ".8em",
-    letterSpacing: "1.5px;",
-    alignItems: "center;",
-    justifyContent: "center;",
-    overflow: "hidden;",
-    position: "relative",
-    transition: "all .3s ease-Out;",
-    fontWeight: "550",
+  closeButton: {
+    width: "50px",
+    marginLeft: "auto",
+    opacity: "1",
+    fontSize: "25px",
+    transition: "color 300ms ease-in",
     "&:hover": {
-      left: 0,
-      backgroundColor: "#FFC247",
-      color: "#fff"
+      transition: "color 300ms ease-out",
+      background: "none",
+      color: "#FFAB40"
     }
+  },
+  slider: {
+    position: "absolute",
+    width: "100%",
+    height: "5px",
+    overflowX: "hidden"
+  },
+  line: {
+    position: "absolute",
+    opacity: "0.9",
+    background: "#ffab40",
+    width: "150%",
+    height: "5px"
+  },
+  subline: {
+    position: "absolute",
+    background: "white",
+    height: "5px"
+  },
+  inc: {
+    animation: "$increase 2s infinite"
+  },
+  dec: {
+    animation: "$decrease 2s 0.5s infinite"
+  },
+  "@keyframes increase": {
+    from: { left: "-5%", width: "5%" },
+    to: { left: "130%", width: "100%" }
+  },
+  "@keyframes decrease": {
+    from: { left: "-80%", width: "80%" },
+    to: { left: "110%", width: "10%" }
   }
 }));
 
-const ReviewModal = props => {
+const ReviewModal = ({ theme, data }) => {
   const classes = useStyles();
-  const theme = useTheme();
-  const { modalToggle, handleClose } = props;
   const {
-    orbitLogo,
-    dialogTitle,
+    htmlEditor,
     dialogContainer,
-    dialogContent,
-    dialogContentText,
-    dialogActions,
-    buttons
+    slider,
+    line,
+    subline,
+    inc,
+    dec
   } = classes;
+  const renderElement = useCallback(props => <Element {...props} />, []);
+  const renderLeaf = useCallback(props => <Leaf {...props} />, []);
+  const [value, setValue] = useState(data);
+  const editor = useMemo(
+    () => withHtml(withReact(withHistory(createEditor()))),
+    []
+  );
+  useEffect(() => {
+    setValue(data);
+  }, [data]);
+
+  return data.length <= 1 ? (
+    <div className={slider}>
+      <div className={line}></div>
+      <div className={`${subline} ${inc}`}></div>
+      <div className={`${subline} ${dec}`}></div>
+    </div>
+  ) : (
+    <Grid className={dialogContainer} container direction="row">
+      <Grid container direction="column" justify="center" alignItems="center">
+        <DialogContent>
+          <div className={htmlEditor}>
+            <Slate editor={editor} value={value}>
+              <Editable
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                placeholder="Preview of your template will be showing here..."
+                readOnly
+              />
+            </Slate>
+          </div>
+        </DialogContent>
+      </Grid>
+    </Grid>
+  );
+};
+
+const withHtml = editor => {
+  const { insertData, isInline, isVoid } = editor;
+
+  editor.isInline = element => {
+    return element.type === "link" ? true : isInline(element);
+  };
+
+  editor.isVoid = element => {
+    return element.type === "image" ? true : isVoid(element);
+  };
+
+  editor.insertData = data => {
+    const html = data.getData("text/html");
+
+    if (html) {
+      const parsed = new DOMParser().parseFromString(html, "text/html");
+      const fragment = deserialize(parsed.body);
+      Transforms.insertFragment(editor, fragment);
+      return;
+    }
+
+    insertData(data);
+  };
+
+  return editor;
+};
+
+const Element = props => {
+  const { attributes, children, element } = props;
+
+  switch (element.type) {
+    default:
+      return <p {...attributes}>{children}</p>;
+    case "block-quote":
+      return (
+        <blockquote
+          style={{
+            borderLeft: "2px solid grey",
+            borderSpacing: "15px",
+            color: "grey"
+          }}
+          {...attributes}
+        >
+          {"  "}
+          {children}
+        </blockquote>
+      );
+    case "code":
+      return (
+        <pre>
+          <code {...attributes}>{children}</code>
+        </pre>
+      );
+    case "bulleted-list":
+      return <ul {...attributes}>{children}</ul>;
+    case "heading-one":
+      return <h1 {...attributes}>{children}</h1>;
+    case "heading-two":
+      return <h2 {...attributes}>{children}</h2>;
+    case "heading-three":
+      return <h3 {...attributes}>{children}</h3>;
+    case "heading-four":
+      return <h4 {...attributes}>{children}</h4>;
+    case "heading-five":
+      return <h5 {...attributes}>{children}</h5>;
+    case "heading-six":
+      return <h6 {...attributes}>{children}</h6>;
+    case "list-item":
+      return <li {...attributes}>{children}</li>;
+    case "numbered-list":
+      return <ol {...attributes}>{children}</ol>;
+    case "link":
+      return (
+        <a href={element.url} {...attributes} target="_blank">
+          {children}
+        </a>
+      );
+    case "image":
+      return <ImageElement {...props} />;
+  }
+};
+
+const ImageElement = ({ attributes, children, element }) => {
+  const selected = useSelected();
+  const focused = useFocused();
+  return (
+    <div {...attributes}>
+      {children}
+      <img
+        src={element.url}
+        className={css`
+          display: block;
+          max-width: 100%;
+          max-height: 20em;
+          box-shadow: ${selected && focused ? "0 0 0 2px blue;" : "none"};
+        `}
+      />
+    </div>
+  );
+};
+
+const Leaf = ({ attributes, children, leaf }) => {
+  const theme = useTheme();
+  if (leaf.bold) {
+    children = <strong>{children}</strong>;
+  }
+
+  if (leaf.code) {
+    children = <code>{children}</code>;
+  }
+
+  if (leaf.italic) {
+    children = <em>{children}</em>;
+  }
+
+  if (leaf.underline) {
+    children = <u>{children}</u>;
+  }
+
+  if (leaf.strikethrough) {
+    children = <del>{children}</del>;
+  }
 
   return (
-    <div>
-      <Dialog
-        open={modalToggle}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <Grid
-          container
-          direction="row"
-          justify="center"
-          alignItems="center"
-          className={dialogContainer}
-        >
-          <Grid
-            container
-            direction="column"
-            justify="center"
-            alignItems="center"
-            style={{
-              backgroundColor: "#ffb447",
-              boxShadow: "0px 1px 5px",
-              borderTop: "15px solid #ffc247"
-            }}
-          >
-            <img
-              src="https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png"
-              alt="orbit"
-              className={orbitLogo}
-            />
-          </Grid>
-
-          <Grid
-            container
-            direction="column"
-            justify="center"
-            alignItems="center"
-          >
-            <DialogTitle className={dialogTitle}>
-              Your choices regarding privacy on GameOrbit
-            </DialogTitle>
-          </Grid>
-          <Grid
-            container
-            direction="column"
-            justify="center"
-            alignItems="center"
-          >
-            <DialogContent className={dialogContent}>
-              <h3>Information storage and access</h3>
-              <DialogContentText className={dialogContentText}>
-                The storage of information, or access to information that is
-                already stored, on your device such as advertising identifiers,
-                device identifiers, cookies, and similar technologies.
-                <Grid
-                  item
-                  style={{
-                    // border: "2px solid #01ADEF",
-                    color: "#3D7E84",
-                    paddingLeft: "20px",
-                    marginTop: "20px",
-                    // boxShadow: "inset 0 0 10px",
-                    borderLeft: "2px dotted"
-                  }}
-                >
-                  <h4>Example</h4>
-                  <p>Example sentence</p>
-                </Grid>
-              </DialogContentText>
-            </DialogContent>
-
-            <DialogContent className={dialogContent}>
-              <h3>Personalisation</h3>
-              <DialogContentText className={dialogContentText}>
-                The collection and processing of information about your use of
-                this service to subsequently personalise advertising and/or
-                content for you in other contexts, such as on other websites or
-                apps, over time. Typically, the content of the site or app is
-                used to make inferences about your interests, which inform
-                future selection of advertising and/or content.
-              </DialogContentText>
-            </DialogContent>
-
-            <DialogContent className={dialogContent}>
-              <h3>Ad selection, delivery, reporting</h3>
-              <DialogContentText className={dialogContentText}>
-                The collection of information, and combination with previously
-                collected information, to select and deliver advertisements for
-                you, and to measure the delivery and effectiveness of such
-                advertisements. This includes using previously collected
-                information about your interests to select ads, processing data
-                about what advertisements were shown, how often they were shown,
-                when and where they were shown, and whether you took any action
-                related to the advertisement, including for example clicking an
-                ad or making a purchase. This does not include personalisation,
-                which is the collection and processing of information about your
-                use of this service to subsequently personalise advertising
-                and/or content for you in other contexts, such as websites or
-                apps, over time.
-              </DialogContentText>
-            </DialogContent>
-          </Grid>
-        </Grid>
-
-        <DialogActions className={dialogActions}>
-          <Button
-            onClick={handleClose}
-            className={buttons}
-            color="inherit"
-            autoFocus
-          >
-            Accept All
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+    <span
+      style={{
+        color: leaf.color
+          ? leaf.color
+          : theme.palette.type === "dark"
+          ? "white"
+          : "black"
+      }}
+      {...attributes}
+    >
+      {children}
+    </span>
   );
 };
 

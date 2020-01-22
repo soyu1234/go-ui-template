@@ -294,7 +294,6 @@ export default function FooterLeft(props) {
         termsAndConditionsUrl={termsAndConditionsUrl}
         handleOpen={handleOpen}
       />
-      <ReviewModal modalToggle={modalToggle} handleClose={handleClose} />
     </footer>
   );
 }

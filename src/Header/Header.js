@@ -1,8 +1,6 @@
-import React from "react";
-import { makeStyles, useTheme } from "@material-ui/core";
-import { Link, AppBar, Toolbar } from "@material-ui/core";
-
-import "./header.css";
+import React, { useState } from "react";
+import { makeStyles, useTheme, Container } from "@material-ui/core";
+import { AppBar, Toolbar } from "@material-ui/core";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -12,27 +10,21 @@ const useStyles = makeStyles(theme => ({
     backgroundColor:
       theme.palette.type === "light"
         ? theme.palette.background.paper
-        : "#2a2330",
-    color: theme.palette.type === "light" ? "#37474f" : "#5F9CA6"
+        : "#212121",
+    color: theme.palette.type === "light" ? "#37474f" : "#5F9CA6",
+    boxShadow: "none"
   },
   title: {
     flexGrow: 1
   },
   orbitLogo: {
-    marginLeft: "2%",
     [theme.breakpoints.up("md")]: {
-      width: "60px",
-      height: "60px"
+      width: "40px",
+      height: "40px"
     },
     [theme.breakpoints.down("md")]: {
-      width: "45px",
-      height: "45px"
-    },
-    [theme.breakpoints.down("sm")]: {
-      marginLeft: "0%"
-    },
-    [theme.breakpoints.up(700)]: {
-      marginLeft: "2%"
+      width: "30px",
+      height: "30px"
     }
   },
   content: {
@@ -58,40 +50,115 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up(700)]: {
       marginLeft: "2%"
     }
+  },
+  searchInput: {
+    width: "100%",
+    border: "none",
+    fontFamily: "Helvetica",
+    // fontSize: "14px",
+    color: "inherit",
+    background: "transparent",
+    outlineWidth: "0px"
+  },
+  searchLabel: {
+    display: "inline-block",
+    position: "relative",
+    height: "20px",
+    width: "20px",
+    boxSizing: "border-box",
+    /* margin: 0px 8px 7px 0px;
+    padding: 7px 9px 0px 9px; */
+    border: "3px solid #37474f",
+    borderRadius: "25px",
+    transition: "all 275ms ease",
+    cursor: "pointer",
+    "&::after": {
+      content: "''",
+      position: "absolute",
+      width: "3px",
+      height: "13px",
+      right: "-4px",
+      top: "13px",
+      background: "#37474f",
+      borderRadius: "3px",
+      transform: "rotate(-45deg)",
+      transition: "all 350ms ease"
+    },
+    "&:hover": {
+      borderColor: `${theme.palette.type === "dark" ? "#AAA5B5" : "#ffab40"}`
+    },
+    "&:hover:after": {
+      background: `${theme.palette.type === "dark" ? "#AAA5B5" : "#ffab40"}`
+    }
+  },
+  searchBox: {
+    // top: "1px",
+    [theme.breakpoints.down(450)]: {
+      width: "200px"
+    },
+    [theme.breakpoints.down(400)]: {
+      width: "150px"
+    },
+    width: "250px",
+    height: "35px",
+    padding: "7px 9px 0px 9px",
+    paddingTop: " 3px",
+    marginRight: "0px",
+    // bottom: "5px",
+    border: `3px solid ${
+      theme.palette.type === "dark" ? "#AAA5B5" : "#ffab40"
+    }`,
+    "&:after": {
+      height: "0px"
+    }
   }
 }));
 
-const Header = props => {
+const SearchBar = ({ setSearch, search }) => {
+  const [clickedSearchBar, setClickedSearchBar] = useState(false);
+  const classes = useStyles();
+  const { searchInput, searchLabel, searchBox } = classes;
+  return (
+    <div
+      onClick={() => setClickedSearchBar(true)}
+      onBlur={() => setClickedSearchBar(false)}
+    >
+      <label
+        className={
+          !clickedSearchBar ? searchLabel : `${searchLabel} ${searchBox}`
+        }
+        // style={hoveredSearchBar ? { borderColor: "red" } : null}
+        // htmlFor="inpt_search"
+      >
+        {clickedSearchBar ? (
+          <input
+            className={searchInput}
+            placeholder="Search the text..."
+            onChange={e => setSearch(e.target.value)}
+            value={search}
+          />
+        ) : null}
+      </label>
+    </div>
+  );
+};
+
+const Header = ({ logo, name }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { orbitLogo, headerContainer, content, orbitText } = classes;
+  const { orbitLogo, headerContainer, orbitText } = classes;
   const array = [1, 2, 3, 4];
+  const [search, setSearch] = useState("");
   return (
-    <div>
-      <AppBar position="static" color="inherit" className={headerContainer}>
-        <Toolbar variant="dense">
-          <img
-            className={orbitLogo}
-            src={
-              theme.palette.type === "light"
-                ? "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png"
-                : "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-light.png"
-            }
-          />
-          <span className={orbitText}>Orbit</span>
-          {array.map(item => (
-            <Link
-              color="inherit"
-              style={{ textDecoration: "none" }}
-              className={`header-item ${content}`}
-              href="#"
-            >
-              Button {item.toString()}
-            </Link>
-          ))}
+    <Container maxWidth="xl">
+      <AppBar color="inherit" className={headerContainer}>
+        <Toolbar>
+          <img className={orbitLogo} src={logo} />
+          <span className={orbitText}>{name}</span>
+          <SearchBar setSearch={setSearch} search={search} />
         </Toolbar>
       </AppBar>
-    </div>
+    </Container>
   );
 };
 
