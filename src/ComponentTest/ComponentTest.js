@@ -47,7 +47,7 @@ import LinkIcon from "@material-ui/icons/Link";
 import { Button, Icon, Toolbar, Portal, Menu, ColorPicker } from "./components";
 import PreviewModal from "./PreviewModal";
 import { ELEMENT_TAGS, TEXT_TAGS } from "./constants";
-import "./componentTest.css";
+// import "./componentTest.css";
 
 const HOTKEYS = {
   "mod+b": "bold",
@@ -73,6 +73,67 @@ const useStyles = makeStyles(theme => ({
     "&:hover": {
       color: "#000"
     }
+  },
+  searchBox: {
+    // top: "1px",
+    [theme.breakpoints.down(450)]: {
+      width: "200px"
+    },
+    [theme.breakpoints.down(400)]: {
+      width: "150px"
+    },
+    width: "250px",
+    height: "35px",
+    padding: "7px 9px 0px 9px",
+    paddingTop: " 3px",
+    marginRight: "0px",
+    // bottom: "5px",
+    border: `3px solid ${
+      theme.palette.type === "dark" ? "#AAA5B5" : "#ffab40"
+    }`,
+    "&:after": {
+      height: "0px"
+    }
+  },
+  searchLabel: {
+    display: "inline-block",
+    position: "relative",
+    height: "15px",
+    width: "15px",
+    boxSizing: "border-box",
+    /* margin: 0px 8px 7px 0px;
+    padding: 7px 9px 0px 9px; */
+    border: "3px solid #37474f",
+    borderRadius: "25px",
+    transition: "all 275ms ease",
+    cursor: "pointer",
+    "&::after": {
+      content: "''",
+      position: "absolute",
+      width: "3px",
+      height: "10px",
+      right: "-4px",
+      top: "6px",
+      background: "#37474f",
+      borderRadius: "3px",
+      transform: "rotate(-45deg)",
+      transition: "all 350ms ease"
+    },
+    "&:hover": {
+      borderColor: `${theme.palette.type === "dark" ? "#AAA5B5" : "#ffab40"}`
+    },
+    "&:hover:after": {
+      background: `${theme.palette.type === "dark" ? "#AAA5B5" : "#ffab40"}`
+    }
+  },
+  searchInput: {
+    width: "100%",
+    border: "none",
+    fontFamily: "Helvetica",
+    // fontSize: "14px",
+    color: "inherit",
+    background: "transparent",
+    outlineWidth: "0px"
   }
 }));
 
@@ -145,7 +206,7 @@ const ComponentTest = props => {
       el.style.top = `${rect.top + el.offsetHeight / 1.5}px`;
       el.style.left = `${rect.left - el.offsetHeight / 16}px`;
     });
-    console.log(color);
+    // console.log(color);
     return (
       <Button
         id="color-button"
@@ -190,6 +251,7 @@ const ComponentTest = props => {
         onChange={value => {
           setValue(value);
           change(value);
+
           if (editor.selection !== null) {
             setPath(editor.selection.anchor.path);
           } else {
@@ -226,7 +288,7 @@ const ComponentTest = props => {
               path !== null ? value[path[0]].children[path[1]].color : "#ccc"
             }
           />
-          <SearchBar setSearch={setSearch} search={search} />
+          {/* <SearchBar setSearch={setSearch} search={search} /> */}
           {/* <ColorButton format="black-color" icon="black-color" color="black" /> */}
         </Toolbar>
         <HoveringToolbar clickedColorPicker={clickedColorPicker} />
@@ -714,21 +776,23 @@ const MarkButton = ({ format, icon, hovered, setClickedPreview }) => {
 
 const SearchBar = ({ setSearch, search }) => {
   const [clickedSearchBar, setClickedSearchBar] = useState(false);
-  const [hoveredSearchBar, setHoveredSearchBar] = useState(false);
-  const editor = useSlate();
-  const format = "search";
+  const classes = useStyles();
+  const { searchInput, searchLabel, searchBox, searchContainer } = classes;
   return (
     <div
       onClick={() => setClickedSearchBar(true)}
       onBlur={() => setClickedSearchBar(false)}
     >
       <label
-        className={!clickedSearchBar ? "search" : "search searchBox"}
+        className={
+          !clickedSearchBar ? searchLabel : `${searchLabel} ${searchBox}`
+        }
         // style={hoveredSearchBar ? { borderColor: "red" } : null}
         // htmlFor="inpt_search"
       >
         {clickedSearchBar ? (
           <input
+            className={searchInput}
             placeholder="Search the text..."
             onChange={e => setSearch(e.target.value)}
             value={search}

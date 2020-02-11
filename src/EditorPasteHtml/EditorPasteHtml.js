@@ -112,7 +112,6 @@ const EditorPasteHtml = props => {
         <Editable
           renderElement={renderElement}
           renderLeaf={renderLeaf}
-          placeholder="Preview of your template will be showing here..."
           readOnly
         />
       </Slate>

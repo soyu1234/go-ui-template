@@ -95,7 +95,8 @@ const PrivacyPolicy = ({
   privacyUrl,
   setValue,
   handleOpen,
-  privacyAndTermsApi
+  privacyAndTermsApi,
+  action
 }) => {
   const classes = useStyles();
   const { content } = classes;
@@ -111,6 +112,7 @@ const PrivacyPolicy = ({
         className={content}
         href={url}
         target="_blank"
+        onClick={action}
       >
         Privacy policy
       </Link>
@@ -185,7 +187,8 @@ function FooterGrid({
   handleOpen,
   logoUrl,
   setValue,
-  privacyAndTermsApi
+  privacyAndTermsApi,
+  action
 }) {
   return (
     <Grid
@@ -202,6 +205,7 @@ function FooterGrid({
           setValue={setValue}
           handleOpen={handleOpen}
           privacyAndTermsApi={privacyAndTermsApi}
+          action={action}
         />
       </Grid>
       &nbsp; | &nbsp;
@@ -246,7 +250,8 @@ export default function FooterPlain(props) {
     privacyUrl,
     termsAndConditionsUrl,
     logoUrl,
-    privacyAndTermsApi
+    privacyAndTermsApi,
+    action
   } = props;
 
   const [modalToggle, setModalToggle] = useState(false);
@@ -279,6 +284,7 @@ export default function FooterPlain(props) {
         logoUrl={logoUrl}
         setValue={setValue}
         privacyAndTermsApi={privacyAndTermsApi}
+        action={action}
       />
       {/* <ReviewModal
         modalToggle={modalToggle}

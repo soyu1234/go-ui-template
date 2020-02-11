@@ -3,6 +3,7 @@ import React from "react";
 import { storiesOf } from "@storybook/react";
 import { ThemeProvider } from "@material-ui/styles";
 import "@storybook/addon-viewport/register";
+import { action } from "@storybook/addon-actions";
 // component import section
 import { Home } from "../src/Home/index";
 import { Footer } from "../src/Footer";
@@ -13,6 +14,7 @@ import { ComponentTest } from "../src/ComponentTest";
 // import { CardComponent } from "../src/CardComponent";
 // import { ReviewModal } from "../src/ReviewModal";
 import { FooterPlain } from "../src/FooterPlain";
+import { CardComponent } from "../src/CardComponent";
 
 import theme from "./theme";
 
@@ -61,8 +63,7 @@ storiesOf("Footer", module).add("footerLeft", () => {
 
 storiesOf("Header", module).add("header1", () => {
   const props = {
-    logo:
-      "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png",
+    logo: "https://storage.googleapis.com/orbit-static/orbit/orbit-atom.png ",
     name: "Orbit"
   };
   return (
@@ -123,13 +124,28 @@ storiesOf("Footer", module).add("Simpler Footer", () => {
     url: "https://gamedistribution.com/",
     website: "Game Distribution",
     privacyAndTermsApi: "http://localhost:6007/iframe.html?id=home--default",
-    logoUrl:
-      "https://storage.googleapis.com/orbit-static/orbit/orbit-logo-512.png",
+    logoUrl: "https://storage.googleapis.com/orbit-static/orbit/orbit-atom.png",
     data: [{ type: "paragraph", children: [{ text: "a" }] }]
   };
   return (
     <ThemeProvider theme={theme}>
-      <FooterPlain {...footerProps} />
+      <FooterPlain {...footerProps} action={action("Clicked")} />
     </ThemeProvider>
   );
 });
+
+// storiesOf("Card Component", module).add("Circle", () => {
+//   const footerProps = {
+//     theme: theme,
+//     url: "https://gamedistribution.com/",
+//     website: "Game Distribution",
+//     privacyAndTermsApi: "http://localhost:6007/iframe.html?id=home--default",
+//     logoUrl: "https://storage.googleapis.com/orbit-static/orbit/orbit-atom.png",
+//     data: [{ type: "paragraph", children: [{ text: "a" }] }]
+//   };
+//   return (
+//     <ThemeProvider theme={theme}>
+//       <CardComponent {...footerProps} />
+//     </ThemeProvider>
+//   );
+// });
